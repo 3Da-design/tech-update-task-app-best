@@ -1,11 +1,21 @@
 services:
   app:
+    # docker/php/Dockerfile を変更したら再ビルド: docker compose build app && docker compose up -d
     build:
       context: .
       dockerfile: docker/php/Dockerfile
     container_name: tech-update-task-app-php
     restart: unless-stopped
     working_dir: /var/www/html
+    environment:
+      # .env がホスト用（127.0.0.1）でも、コンテナ内は compose サービス名で接続する
+      # （php-fpm の clear_env=no によりここが PHP に渡る）
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: laravel
+      DB_USERNAME: postgres
+      DB_PASSWORD: secret
     volumes:
       - .:/var/www/html
     networks:

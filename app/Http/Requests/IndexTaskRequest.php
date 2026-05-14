@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class IndexTaskRequest extends FormRequest
 {
@@ -24,7 +25,7 @@ class IndexTaskRequest extends FormRequest
   {
     return [
       'title' => ['sometimes', 'string', 'max:255'],
-      'status' => ['sometimes', 'string', 'max:255'],
+      'status' => ['sometimes', 'string', Rule::in(config('task.status_values'))],
       'due_date_sort' => ['sometimes', 'string', 'in:asc,desc'],
     ];
   }

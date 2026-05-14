@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTaskRequest extends FormRequest
 {
@@ -25,7 +26,7 @@ class StoreTaskRequest extends FormRequest
     return [
       'title' => ['required', 'string', 'max:255'],
       'description' => ['nullable', 'string'],
-      'status' => ['required', 'string', 'max:255'],
+      'status' => ['required', 'string', Rule::in(config('task.status_values'))],
       'due_date' => ['nullable', 'date'],
     ];
   }

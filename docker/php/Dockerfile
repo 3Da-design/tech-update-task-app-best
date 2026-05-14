@@ -9,3 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
+
+# php-fpm はワーカー起動時に環境変数を消すため、Compose の DB_HOST 等が届かない。
+# Laravel が .env の 127.0.0.1 だけを見てしまいコンテナ内から DB に繋がらない問題を防ぐ。
+COPY docker/php/zz-clear-env.conf /usr/local/etc/php-fpm.d/zz-clear-env.conf

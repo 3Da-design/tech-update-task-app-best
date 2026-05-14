@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateTaskRequest extends FormRequest
 {
@@ -25,7 +26,7 @@ class UpdateTaskRequest extends FormRequest
     return [
       'title' => ['sometimes', 'required', 'string', 'max:255'],
       'description' => ['sometimes', 'nullable', 'string'],
-      'status' => ['sometimes', 'required', 'string', 'max:255'],
+      'status' => ['sometimes', 'required', 'string', Rule::in(config('task.status_values'))],
       'due_date' => ['sometimes', 'nullable', 'date'],
     ];
   }
