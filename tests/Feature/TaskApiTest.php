@@ -11,11 +11,13 @@ class TaskApiTest extends TestCase
 {
   use RefreshDatabase;
 
+  private User $user;
+
   protected function setUp(): void
   {
     parent::setUp();
 
-    User::factory()->create([
+    $this->user = User::factory()->create([
       'email' => 'test@example.com',
     ]);
   }
@@ -31,7 +33,7 @@ class TaskApiTest extends TestCase
       'due_date' => null,
     ]);
 
-    $response = $this->getJson('/api/tasks');
+    $response = $this->actingAs($this->user)->getJson('/api/tasks');
 
     $response->assertOk();
     $response->assertJsonCount(1, 'data');
@@ -40,9 +42,9 @@ class TaskApiTest extends TestCase
   /** POST 正常( title + status は必須に合わせる) */
   public function test_store_returns_201_with_created_task(): void
   {
-    $response = $this->postJson('/api/tasks', [
+    $response = $this->actingAs($this->user)->postJson('/api/tasks', [
       'title' => 'New Task',
-      'status' => 'todo'
+      'status' => 'todo',
     ]);
 
     $response->assertCreated();
@@ -53,7 +55,7 @@ class TaskApiTest extends TestCase
   /** POST title なし → Laravel 標準は 422 */
   public function test_store_without_title_returns_422(): void
   {
-    $response = $this->postJson('/api/tasks', [
+    $response = $this->actingAs($this->user)->postJson('/api/tasks', [
       'status' => 'todo',
     ]);
 
@@ -70,12 +72,12 @@ class TaskApiTest extends TestCase
       'title' => 'Old',
       'description' => null,
       'status' => 'todo',
-      'due_date' => null
+      'due_date' => null,
     ]);
 
-    $response = $this->putJson("/api/tasks/{$task->id}", [
+    $response = $this->actingAs($this->user)->putJson("/api/tasks/{$task->id}", [
       'title' => 'Updated',
-      'status' => 'in_progress'
+      'status' => 'in_progress',
     ]);
 
     $response->assertOk();
@@ -85,9 +87,9 @@ class TaskApiTest extends TestCase
   /** PUT　存在しない ID → 404(ModelNotFoundException) */
   public function test_update_unknown_id_returns_404(): void
   {
-    $response = $this->putJson('/api/tasks/999999', [
+    $response = $this->actingAs($this->user)->putJson('/api/tasks/999999', [
       'title' => 'X',
-      'status' => 'todo'
+      'status' => 'todo',
     ]);
 
     $response->assertNotFound();
@@ -102,10 +104,10 @@ class TaskApiTest extends TestCase
       'title' => 'To delete',
       'description' => null,
       'status' => 'todo',
-      'due_date' => null
+      'due_date' => null,
     ]);
 
-    $response = $this->deleteJson("/api/tasks/{$task->id}");
+    $response = $this->actingAs($this->user)->deleteJson("/api/tasks/{$task->id}");
 
     $response->assertNoContent();
     $this->assertDatabaseMissing('tasks', ['id' => $task->id]);

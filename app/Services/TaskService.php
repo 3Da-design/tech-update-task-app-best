@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Task;
-use App\Models\User;
 use App\Repositories\Contracts\TaskRepositoryInterface;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -14,16 +14,12 @@ class TaskService
     private TaskRepositoryInterface $tasks,
   ) {}
 
-  public function defaultUserId(): int
+  public function currentUserId(): int
   {
-    $email = config('task.default_user_email');
-
-    $id = User::query()->where('email', $email)->value('id');
+    $id = auth()->id();
 
     if ($id === null) {
-      throw new ModelNotFoundException(
-        "Default task user not found for email [{$email}]. Run migrations and seeders.",
-      );
+      throw new AuthenticationException;
     }
 
     return (int) $id;
@@ -31,7 +27,7 @@ class TaskService
 
   public function listForDefaultUser(array $query): Collection
   {
-    $userId = $this->defaultUserId();
+    $userId = $this->currentUserId();
 
     return $this->tasks->getFiltered($userId, $this->normalizeListFilters($query));
   }
@@ -39,14 +35,14 @@ class TaskService
   public function createForDefaultUser(array $data): Task
   {
     unset($data['user_id']);
-    $userId = $this->defaultUserId();
+    $userId = $this->currentUserId();
 
     return $this->tasks->create($userId, $this->normalizeTaskPayload($data));
   }
 
   public function findForDefaultUser(int $taskId): Task
   {
-    $userId = $this->defaultUserId();
+    $userId = $this->currentUserId();
     $task = $this->tasks->findById($userId, $taskId);
 
     if ($task === null) {

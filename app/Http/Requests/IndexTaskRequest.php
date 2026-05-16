@@ -16,6 +16,21 @@ class IndexTaskRequest extends FormRequest
     return true;
   }
 
+  protected function prepareForValidation(): void
+  {
+    $normalized = [];
+
+    foreach (['title', 'status', 'due_date_sort'] as $key) {
+      if ($this->has($key) && $this->input($key) === '') {
+        $normalized[$key] = null;
+      }
+    }
+
+    if ($normalized !== []) {
+      $this->merge($normalized);
+    }
+  }
+
   /**
    * Get the validation rules that apply to the request.
    *
@@ -24,9 +39,9 @@ class IndexTaskRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'title' => ['sometimes', 'string', 'max:255'],
-      'status' => ['sometimes', 'string', Rule::in(config('task.status_values'))],
-      'due_date_sort' => ['sometimes', 'string', 'in:asc,desc'],
+      'title' => ['nullable', 'string', 'max:255'],
+      'status' => ['nullable', 'string', Rule::in(config('task.status_values'))],
+      'due_date_sort' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
     ];
   }
 }

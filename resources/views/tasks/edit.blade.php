@@ -1,20 +1,18 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">タスク編集</x-slot>
 
-@section('title', 'タスク編集')
+    <x-app-container narrow>
+        <x-card>
+            <form method="post" action="{{ route('tasks.update', $task->id) }}">
+                @csrf
+                @method('PUT')
+                @include('tasks._form', ['task' => $task])
 
-@section('content')
-    <h1 class="mb-6 text-xl font-semibold">タスク編集</h1>
-
-    <form method="post" action="{{ route('tasks.update', $task->id) }}" class="max-w-xl space-y-6 rounded-lg border border-gray-200 bg-white p-6 dark:border-[#3E3E3A] dark:bg-[#161615]">
-        @csrf
-        @method('PUT')
-        @include('tasks._form', ['task' => $task])
-
-        <div class="flex gap-3">
-            <button type="submit" class="rounded-md bg-[#1b1b18] px-4 py-2 text-sm font-medium text-white dark:bg-[#EDEDEC] dark:text-[#1b1b18]">
-                更新
-            </button>
-            <a href="{{ route('tasks.index') }}" class="rounded-md border border-gray-300 px-4 py-2 text-sm dark:border-[#3E3E3A]">一覧へ</a>
-        </div>
-    </form>
-@endsection
+                <div class="app-form-actions">
+                    <x-primary-button>更新</x-primary-button>
+                    <x-secondary-link href="{{ route('tasks.index') }}">一覧へ</x-secondary-link>
+                </div>
+            </form>
+        </x-card>
+    </x-app-container>
+</x-app-layout>
