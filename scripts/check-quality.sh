@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 実行前: PHPStan + ESLint / 実行後: PHPUnit（Docker 前提）
+# 実行前: PHPStan + ESLint / 実行後: PHPUnit + Newman（Docker 前提）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -13,10 +13,34 @@ echo "== ESLint (実行前・構文・規約) =="
 docker compose --profile node run --rm node npm run lint
 
 echo ""
+echo "== Frontend build (PHPUnit / Newman 用) =="
+docker compose --profile node run --rm node sh -c "npm ci && npm run build"
+
+echo ""
 echo "== PHPUnit (実行後・ロジック) =="
 docker compose exec -T app composer test
 
 echo ""
-echo "All static and unit checks passed."
-echo "Postman: Import postman/Task-API.postman_collection.json and postman/local.postman_environment.json"
-echo "  Run Auth → Login, then Tasks API folder in Postman (app must be up on :8000)."
+echo "== Newman (実行後・API・セッション) =="
+if ! curl -sf "http://localhost:8000/up" > /dev/null 2>&1; then
+  echo "http://localhost:8000 に接続できないため docker compose up -d を実行します"
+  docker compose up -d
+  for _ in $(seq 1 30); do
+    if curl -sf "http://localhost:8000/up" > /dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+  if ! curl -sf "http://localhost:8000/up" > /dev/null 2>&1; then
+    echo "ERROR: http://localhost:8000/up に接続できません。docker compose ps で状態を確認してください。"
+    exit 1
+  fi
+fi
+
+echo "DB migrate --seed（test@example.com / password）"
+docker compose exec -T app php artisan migrate --force --seed
+
+docker compose --profile node run --rm node npm run test:api
+
+echo ""
+echo "All checks passed (PHPStan, ESLint, PHPUnit, Newman)."

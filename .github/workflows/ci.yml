@@ -100,3 +100,56 @@ jobs:
 
       - name: Vite build
         run: npm run build
+
+  api-tests:
+    name: API Tests (Newman)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, curl, dom, fileinfo, intl, mbstring, pcntl, pdo_sqlite, sqlite3, zip
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          chmod -R 777 storage bootstrap/cache
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=sqlite/' .env
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=database\/ci.sqlite/' .env
+          mkdir -p database
+          touch database/ci.sqlite
+          php artisan migrate --force --seed
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install npm dependencies and build assets
+        run: npm ci && npm run build
+
+      - name: Start application server
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 > storage/logs/ci-serve.log 2>&1 &
+          echo $! > storage/ci-serve.pid
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8000/up > /dev/null; then
+              echo "Server is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server failed to start"
+          cat storage/logs/ci-serve.log || true
+          exit 1
+
+      - name: Run Newman
+        run: npm run test:api -- --env-var "baseUrl=http://127.0.0.1:8000"

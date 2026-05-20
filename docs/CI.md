@@ -23,14 +23,15 @@
 
 ## ジョブ構成
 
-3 つのジョブが **並列** に実行されます。いずれかが失敗するとワークフロー全体が失敗します。
+4 つのジョブが **並列** に実行されます。いずれかが失敗するとワークフロー全体が失敗します。
 
 ```text
 push / pull_request
         │
         ├─► php-tests    … PHPUnit（フロントビルド込み）
         ├─► php-quality  … Pint + PHPStan
-        └─► frontend     … ESLint + Vite build
+        ├─► frontend     … ESLint + Vite build
+        └─► api-tests    … Postman コレクション（Newman）
 ```
 
 ### 1. PHP Tests（`php-tests`）
@@ -69,6 +70,19 @@ PHP の静的品質チェックです。
 | ESLint | `npm run lint` |
 | Vite build | `npm run build` — 本番ビルドが通るか確認 |
 
+### 4. API Tests（`api-tests`）
+
+Postman コレクションを **Newman** で CLI 実行し、実 HTTP（セッション認証込み）で API を検証します。
+
+| ステップ | 内容 |
+|----------|------|
+| Prepare Laravel | SQLite（`database/ci.sqlite`）+ `migrate --seed`（`test@example.com` / `password`） |
+| npm ci & build | ログイン画面（`GET /login`）用に Vite ビルド |
+| Start server | `php artisan serve` を `127.0.0.1:8000` で起動し `/up` を待機 |
+| Run Newman | `npm run test:api`（`Health` → `Auth` → `Tasks API` の順） |
+
+**補足:** 環境ファイルは `postman/local.postman_environment.json` を使い、CI では `--env-var "baseUrl=http://127.0.0.1:8000"` で URL を上書きします。
+
 ---
 
 ## ローカルで CI と同じことを実行する
@@ -87,6 +101,12 @@ docker compose --profile node run --rm node sh -c "npm ci && npm run lint && npm
 # テスト（ビルド成果物が必要）
 docker compose --profile node run --rm node sh -c "npm ci && npm run build"
 docker compose exec app composer test
+
+# API（アプリ起動 + Newman）
+docker compose up -d
+docker compose exec app php artisan migrate --seed
+docker compose --profile node run --rm node sh -c "npm ci && npm run build"
+docker compose --profile node run --rm node npm run test:api
 ```
 
 ### ホストで実行する場合
@@ -104,9 +124,11 @@ npm run lint
 npm run build
 
 composer test
+
+npm run test:api   # Docker で app が http://localhost:8000 のとき
 ```
 
-`composer check` は **PHPStan + テストのみ** です（Pint / ESLint / build は含みません）。
+`composer check` は **PHPStan + テストのみ** です（Pint / ESLint / build / Newman は含みません）。Docker 上で一式実行する場合は `./scripts/check-quality.sh` を使います。
 
 ---
 
@@ -117,6 +139,7 @@ composer test
 | `test` | `php artisan test` | php-tests |
 | `phpstan` | PHPStan 解析 | php-quality |
 | `check` | phpstan + test | （部分的） |
+| `test:api` | Newman（Postman コレクション） | api-tests |
 
 ---
 

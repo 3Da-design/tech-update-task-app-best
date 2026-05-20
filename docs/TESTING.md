@@ -178,13 +178,13 @@ npx newman run postman/Task-API.postman_collection.json \
 
 ## 一括実行
 
-PHPStan・ESLint・PHPUnit をまとめて実行:
+PHPStan・ESLint・PHPUnit・Newman（Postman コレクション）をまとめて実行:
 
 ```bash
 ./scripts/check-quality.sh
 ```
 
-Postman は GUI または Newman で別途実行します。
+`http://localhost:8000` に接続できない場合はスクリプト内で `docker compose up -d` を試行します。Postman GUI で手動確認する場合は [postman/README.md](../postman/README.md) を参照してください。
 
 ---
 
@@ -196,7 +196,7 @@ Postman は GUI または Newman で別途実行します。
 | JS の typo・未使用変数 | ESLint |
 | バリデーション 422 / 404 などの仕様 | PHPUnit |
 | ログイン後の Cookie で API が動くか | Postman |
-| フレームワーク更新後の一括確認 | `check-quality.sh` + Postman Runner |
+| フレームワーク更新後の一括確認 | `check-quality.sh` |
 
 ---
 
