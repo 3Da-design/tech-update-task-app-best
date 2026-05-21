@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 実験ランの baseline / after_update / after_fix の JSON から、
-metrics-record-template に沿った Markdown 表と RECORD.md を生成する。
+metrics-record-template に沿った Markdown 記録（RECORD.md）を生成する。
 """
 from __future__ import annotations
 
@@ -9,6 +9,38 @@ import argparse
 import json
 import sys
 from pathlib import Path
+
+PHASE_ORDER = ("baseline", "after_update", "after_fix")
+PHASE_LABELS = {
+    "baseline": "ベースライン",
+    "after_update": "更新直後",
+    "after_fix": "修正後",
+}
+
+SPREADSHEET_HEADERS = [
+    "repository",
+    "scenario",
+    "phase",
+    "recorded_at",
+    "phpunit_pass",
+    "phpunit_total",
+    "phpunit_pass_rate",
+    "newman_pass",
+    "newman_total",
+    "newman_pass_rate",
+    "phpstan_errors",
+    "eslint_ok",
+    "ci_jobs_failed",
+    "ci_jobs_total",
+    "work_minutes",
+    "files_changed",
+    "lines_added",
+    "lines_deleted",
+    "commits",
+    "manual_bugs",
+    "metrics_json",
+    "notes",
+]
 
 
 def load_json(path: Path) -> dict | None:
@@ -18,19 +50,55 @@ def load_json(path: Path) -> dict | None:
         return json.load(f)
 
 
-def row_from_json(
+def fmt_rate(rate: object) -> str:
+    if rate is None or rate == "":
+        return "—"
+    try:
+        return f"{float(rate):.1f}%"
+    except (TypeError, ValueError):
+        return str(rate)
+
+
+def fmt_suite(pass_: object, total: object, rate: object) -> str:
+    if total in (None, ""):
+        return "—"
+    return f"{pass_}/{total} ({fmt_rate(rate)})"
+
+
+def fmt_eslint(data: dict | None) -> str:
+    if data is None:
+        return "—"
+    es = data.get("eslint", {})
+    if es.get("ok"):
+        return "OK"
+    if "ok" in es:
+        return "NG"
+    return "—"
+
+
+def fmt_phpstan(data: dict | None) -> str:
+    if data is None:
+        return "—"
+    ps = data.get("phpstan", {})
+    count = ps.get("error_count", "")
+    if count == "":
+        return "—"
+    return f"{count} 件"
+
+
+def spreadsheet_row(
     scenario: str,
     phase: str,
     data: dict | None,
     run_id: str,
 ) -> list[str]:
     if data is None:
-        empties = [""] * 17
         return [
             "improved",
             scenario,
             phase,
-            *empties,
+            "",
+            *([""] * 15),
             f"(missing {phase}.json)",
             "",
         ]
@@ -41,17 +109,6 @@ def row_from_json(
     nm = data.get("newman", {})
     ps = data.get("phpstan", {})
     es = data.get("eslint", {})
-    git = data.get("git", {})
-
-    php_pass = str(php.get("pass", ""))
-    php_total = str(php.get("total", ""))
-    php_rate = str(php.get("pass_rate", ""))
-    nm_pass = str(nm.get("pass", ""))
-    nm_total = str(nm.get("total", ""))
-    nm_rate = str(nm.get("pass_rate", ""))
-    phpstan_err = str(ps.get("error_count", ""))
-    eslint_ok = "1" if es.get("ok") else "0"
-    shortstat = str(git.get("diff_shortstat", ""))
     json_rel = f"experiment/metrics/runs/{run_id}/{phase}.json"
 
     return [
@@ -59,78 +116,112 @@ def row_from_json(
         scenario,
         phase,
         recorded,
-        php_pass,
-        php_total,
-        php_rate,
-        nm_pass,
-        nm_total,
-        nm_rate,
-        phpstan_err,
-        eslint_ok,
+        str(php.get("pass", "")),
+        str(php.get("total", "")),
+        str(php.get("pass_rate", "")),
+        str(nm.get("pass", "")),
+        str(nm.get("total", "")),
+        str(nm.get("pass_rate", "")),
+        str(ps.get("error_count", "")),
+        "1" if es.get("ok") else "0",
         "",
         "",
         "",
         "",
         "",
         "",
-        f"`{json_rel}`",
+        json_rel,
         "",
     ]
+
+
+def repository_label(phases: dict[str, dict | None]) -> str:
+    for phase in PHASE_ORDER:
+        data = phases.get(phase)
+        if data and data.get("repository"):
+            return str(data["repository"])
+    return "improved"
 
 
 def build_markdown(run_id: str, scenario: str, phases: dict[str, dict | None]) -> str:
-    headers = [
-        "repository",
-        "scenario",
-        "phase",
-        "recorded_at",
-        "phpunit_pass",
-        "phpunit_total",
-        "phpunit_pass_rate",
-        "newman_pass",
-        "newman_total",
-        "newman_pass_rate",
-        "phpstan_errors",
-        "eslint_ok",
-        "ci_jobs_failed",
-        "ci_jobs_total",
-        "work_minutes",
-        "files_changed",
-        "lines_added",
-        "lines_deleted",
-        "commits",
-        "manual_bugs",
-        "metrics_json",
-        "notes",
-    ]
-
+    repo = repository_label(phases)
     lines: list[str] = []
-    lines.append(f"# 実験記録（自動生成）\n")
-    lines.append(f"- **run_id:** `{run_id}`\n")
-    lines.append(f"- **scenario:** `{scenario}`\n")
-    lines.append("\n手動列（`ci_jobs_*`, `work_minutes`, `commits`, `manual_bugs`, `notes`）は空です。スプレッドシートにコピーしたあと追記してください。\n")
-    lines.append("\n## メトリクス表（テンプレート列）\n")
-    lines.append("| " + " | ".join(headers) + " |\n")
-    lines.append("| " + " | ".join(["---"] * len(headers)) + " |\n")
 
-    for phase in ("baseline", "after_update", "after_fix"):
+    lines.append("# 実験記録（自動生成）\n\n")
+    lines.append("| 項目 | 値 |\n")
+    lines.append("|------|----|\n")
+    lines.append(f"| **run_id** | `{run_id}` |\n")
+    lines.append(f"| **シナリオ** | `{scenario}` |\n")
+    lines.append(f"| **リポジトリ** | `{repo}` |\n")
+    lines.append(
+        "\n手動項目（CI・作業時間・コミット数など）は [手動記入](#manual) の表に追記してください。"
+        " スプレッドシートへそのまま貼る場合は [TSV（全列）](#tsv) を使えます。\n"
+    )
+
+    lines.append("\n## 自動収集サマリー\n\n")
+    lines.append("| フェーズ | 記録時刻 | PHPUnit | Newman | PHPStan | ESLint |\n")
+    lines.append("|:---------|:---------|:--------|:-------|:--------|:-------|\n")
+    for phase in PHASE_ORDER:
+        label = PHASE_LABELS[phase]
         data = phases.get(phase)
-        cells = row_from_json(scenario, phase, data, run_id)
-        lines.append("| " + " | ".join(cells) + " |\n")
+        if data is None:
+            lines.append(f"| {label} | — | — | — | — | — |\n")
+            continue
+        php = data.get("phpunit", {})
+        nm = data.get("newman", {})
+        recorded = str(data.get("recorded_at", "—"))
+        lines.append(
+            f"| {label} | `{recorded}` | "
+            f"{fmt_suite(php.get('pass'), php.get('total'), php.get('pass_rate'))} | "
+            f"{fmt_suite(nm.get('pass'), nm.get('total'), nm.get('pass_rate'))} | "
+            f"{fmt_phpstan(data)} | {fmt_eslint(data)} |\n"
+        )
 
-    lines.append("\n## JSON ファイル\n")
-    for phase in ("baseline", "after_update", "after_fix"):
-        p = f"experiment/metrics/runs/{run_id}/{phase}.json"
-        exists = phases.get(phase) is not None
-        lines.append(f"- `{p}` — {'あり' if exists else '**なし**'}\n")
+    lines.append('\n<a id="manual"></a>\n\n## 手動記入（実験者が追記）\n\n')
+    lines.append(
+        "| フェーズ | CI (失敗/総数) | 作業時間 (分) | 変更ファイル | 追加行 | 削除行 | コミット数 | 手動バグ | メモ |\n"
+    )
+    lines.append("|:---------|:---------------|:--------------|:-------------|:-------|:-------|:-----------|:---------|:-----|\n")
+    for phase in PHASE_ORDER:
+        label = PHASE_LABELS[phase]
+        lines.append(f"| {label} | | | | | | | | |\n")
 
-    lines.append("\n## git diff_shortstat（収集時点）\n")
-    for phase in ("baseline", "after_update", "after_fix"):
+    lines.append("\n## フェーズ別詳細\n\n")
+    for phase in PHASE_ORDER:
+        label = PHASE_LABELS[phase]
         data = phases.get(phase)
-        stat = data.get("git", {}).get("diff_shortstat", "") if data else ""
-        lines.append(f"- **{phase}:** `{stat or '(なし)'}`\n")
+        json_path = f"experiment/metrics/runs/{run_id}/{phase}.json"
+        lines.append(f"### {label} (`{phase}`)\n\n")
+        if data is None:
+            lines.append(f"- **JSON:** `{json_path}` — **なし**\n\n")
+            continue
+        stat = data.get("git", {}).get("diff_shortstat", "") or "（なし）"
+        lines.append(f"- **JSON:** [`{phase}.json`]({json_path})\n")
+        lines.append(f"- **git diff_shortstat:** `{stat}`\n\n")
+
+    lines.append('<a id="tsv"></a>\n\n<details>\n<summary>スプレッドシート用 TSV（全列）</summary>\n\n')
+    lines.append("```tsv\n")
+    lines.append("\t".join(SPREADSHEET_HEADERS) + "\n")
+    for phase in PHASE_ORDER:
+        row = spreadsheet_row(scenario, phase, phases.get(phase), run_id)
+        lines.append("\t".join(row) + "\n")
+    lines.append("```\n\n</details>\n")
 
     return "".join(lines)
+
+
+def scenario_from_existing_record(record_path: Path) -> str | None:
+    if not record_path.is_file():
+        return None
+    for line in record_path.read_text(encoding="utf-8").splitlines():
+        if "scenario" in line and "`" in line:
+            # legacy: - **scenario:** `id`  or table | **シナリオ** | `id` |
+            parts = line.split("`")
+            if len(parts) >= 2:
+                candidate = parts[1].strip()
+                if candidate and candidate != "(unset)":
+                    return candidate
+    return None
 
 
 def main() -> int:
@@ -141,8 +232,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--scenario",
-        default="(unset)",
-        help="Scenario id for the spreadsheet scenario column (e.g. api-spec-change)",
+        default="",
+        help="Scenario id (e.g. api-spec-change). Default: parse existing RECORD.md or (unset)",
     )
     parser.add_argument(
         "--write",
@@ -159,7 +250,10 @@ def main() -> int:
     if not run_id:
         if not active_file.is_file():
             print("error: no --run and no experiment/metrics/.active-run", file=sys.stderr)
-            print("hint: run `composer experiment:metrics -- --phase baseline` first, or pass --run <id>", file=sys.stderr)
+            print(
+                "hint: run `composer experiment:metrics -- --phase baseline` first, or pass --run <id>",
+                file=sys.stderr,
+            )
             return 1
         run_id = active_file.read_text(encoding="utf-8").strip()
 
@@ -168,11 +262,15 @@ def main() -> int:
         print(f"error: run directory not found: {run_dir}", file=sys.stderr)
         return 1
 
+    scenario = args.scenario.strip()
+    if not scenario:
+        scenario = scenario_from_existing_record(run_dir / "RECORD.md") or "(unset)"
+
     phases: dict[str, dict | None] = {}
-    for phase in ("baseline", "after_update", "after_fix"):
+    for phase in PHASE_ORDER:
         phases[phase] = load_json(run_dir / f"{phase}.json")
 
-    md = build_markdown(run_id, args.scenario, phases)
+    md = build_markdown(run_id, scenario, phases)
     print(md)
 
     if args.write:

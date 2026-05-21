@@ -2,8 +2,8 @@
 
 | 項目 | 値 |
 |------|----|
-| **run_id** | `run-20260521T060318Z` |
-| **シナリオ** | `api-spec-change` |
+| **run_id** | `run-20260521T061059Z` |
+| **シナリオ** | `js-library-change` |
 | **リポジトリ** | `improved` |
 
 手動項目（CI・作業時間・コミット数など）は [手動記入](#manual) の表に追記してください。 スプレッドシートへそのまま貼る場合は [TSV（全列）](#tsv) を使えます。
@@ -12,9 +12,9 @@
 
 | フェーズ | 記録時刻 | PHPUnit | Newman | PHPStan | ESLint |
 |:---------|:---------|:--------|:-------|:--------|:-------|
-| ベースライン | `20260521T060318Z` | 38/38 (100.0%) | 13/13 (100.0%) | 0 件 | OK |
-| 更新直後 | `20260521T060717Z` | 36/38 (94.7%) | 10/13 (76.9%) | 0 件 | OK |
-| 修正後 | `20260521T060758Z` | 38/38 (100.0%) | 13/13 (100.0%) | 0 件 | OK |
+| ベースライン | `20260521T061059Z` | 38/38 (100.0%) | 13/13 (100.0%) | 0 件 | OK |
+| 更新直後 | `20260521T061142Z` | 38/38 (100.0%) | 13/13 (100.0%) | 0 件 | OK |
+| 修正後 | `20260521T061219Z` | 38/38 (100.0%) | 13/13 (100.0%) | 0 件 | OK |
 
 <a id="manual"></a>
 
@@ -30,17 +30,17 @@
 
 ### ベースライン (`baseline`)
 
-- **JSON:** [`baseline.json`](experiment/metrics/runs/run-20260521T060318Z/baseline.json)
+- **JSON:** [`baseline.json`](experiment/metrics/runs/run-20260521T061059Z/baseline.json)
 - **git diff_shortstat:** `（なし）`
 
 ### 更新直後 (`after_update`)
 
-- **JSON:** [`after_update.json`](experiment/metrics/runs/run-20260521T060318Z/after_update.json)
+- **JSON:** [`after_update.json`](experiment/metrics/runs/run-20260521T061059Z/after_update.json)
 - **git diff_shortstat:** `（なし）`
 
 ### 修正後 (`after_fix`)
 
-- **JSON:** [`after_fix.json`](experiment/metrics/runs/run-20260521T060318Z/after_fix.json)
+- **JSON:** [`after_fix.json`](experiment/metrics/runs/run-20260521T061059Z/after_fix.json)
 - **git diff_shortstat:** `（なし）`
 
 <a id="tsv"></a>
@@ -50,9 +50,9 @@
 
 ```tsv
 repository	scenario	phase	recorded_at	phpunit_pass	phpunit_total	phpunit_pass_rate	newman_pass	newman_total	newman_pass_rate	phpstan_errors	eslint_ok	ci_jobs_failed	ci_jobs_total	work_minutes	files_changed	lines_added	lines_deleted	commits	manual_bugs	metrics_json	notes
-improved	api-spec-change	baseline	20260521T060318Z	38	38	100.0	13	13	100.0	0	1							experiment/metrics/runs/run-20260521T060318Z/baseline.json	
-improved	api-spec-change	after_update	20260521T060717Z	36	38	94.74	10	13	76.92	0	1							experiment/metrics/runs/run-20260521T060318Z/after_update.json	
-improved	api-spec-change	after_fix	20260521T060758Z	38	38	100.0	13	13	100.0	0	1							experiment/metrics/runs/run-20260521T060318Z/after_fix.json	
+improved	js-library-change	baseline	20260521T061059Z	38	38	100.0	13	13	100.0	0	1							experiment/metrics/runs/run-20260521T061059Z/baseline.json	
+improved	js-library-change	after_update	20260521T061142Z	38	38	100.0	13	13	100.0	0	1							experiment/metrics/runs/run-20260521T061059Z/after_update.json	
+improved	js-library-change	after_fix	20260521T061219Z	38	38	100.0	13	13	100.0	0	1							experiment/metrics/runs/run-20260521T061059Z/after_fix.json	
 ```
 
 </details>
