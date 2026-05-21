@@ -84,6 +84,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 PHPSTAN_EXIT=0
 PHPSTAN_ERRORS=0
 ESLINT_EXIT=0
+BUILD_EXIT=0
 PHPUNIT_EXIT=0
 NEWMAN_EXIT=0
 
@@ -118,7 +119,10 @@ ESLINT_EXIT=$?
 set -e
 
 echo ">> Frontend build (PHPUnit / Newman)"
-docker compose --profile node run --rm node npm run build
+set +e
+docker compose --profile node run --rm node npm run build 2>"$TMP_DIR/build.stderr"
+BUILD_EXIT=$?
+set -e
 
 echo ">> PHPUnit (JUnit)"
 JUNIT_HOST="$TMP_DIR/junit.xml"
@@ -224,7 +228,7 @@ if [[ "$NEWMAN_TOTAL" -gt 0 ]]; then
   newman_rate="$(python3 -c "print(round($NEWMAN_PASS / $NEWMAN_TOTAL * 100, 2))")"
 fi
 
-export OUTPUT PHASE TIMESTAMP RUN_ID PHPSTAN_EXIT PHPSTAN_ERRORS ESLINT_EXIT PHPUNIT_EXIT NEWMAN_EXIT
+export OUTPUT PHASE TIMESTAMP RUN_ID PHPSTAN_EXIT PHPSTAN_ERRORS ESLINT_EXIT BUILD_EXIT PHPUNIT_EXIT NEWMAN_EXIT
 export PHPUNIT_PASS PHPUNIT_FAIL PHPUNIT_TOTAL NEWMAN_PASS NEWMAN_FAIL NEWMAN_TOTAL
 export phpunit_rate newman_rate GIT_SHORTSTAT
 
@@ -243,6 +247,10 @@ doc = {
     "eslint": {
         "exit_code": int(os.environ["ESLINT_EXIT"]),
         "ok": int(os.environ["ESLINT_EXIT"]) == 0,
+    },
+    "vite_build": {
+        "exit_code": int(os.environ["BUILD_EXIT"]),
+        "ok": int(os.environ["BUILD_EXIT"]) == 0,
     },
     "phpunit": {
         "exit_code": int(os.environ["PHPUNIT_EXIT"]),
