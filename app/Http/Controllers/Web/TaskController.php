@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Http\Controllers\Concerns\ParsesTaskRouteId;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\IndexTaskRequest;
 use App\Http\Requests\StoreTaskRequest;
@@ -12,6 +13,8 @@ use Illuminate\View\View;
 
 class TaskController extends Controller
 {
+  use ParsesTaskRouteId;
+
   public function index(IndexTaskRequest $request, TaskService $tasks): View
   {
     return view('tasks.index', [
@@ -56,14 +59,5 @@ class TaskController extends Controller
     return redirect()
       ->route('tasks.index')
       ->with('status', 'タスクを削除しました。');
-  }
-
-  private function parseTaskId(string $id): int
-  {
-    if (! ctype_digit($id)) {
-      abort(404);
-    }
-
-    return (int) $id;
   }
 }

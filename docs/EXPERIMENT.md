@@ -14,7 +14,8 @@
 
 ## 本リポジトリの役割
 
-- 改良構成の **ベースライン** を確立する
+- 改良構成の **ベースライン** を確立する（**`main` ブランチ = `experiment-baseline-v1` 相当**。タスク属性は `title` / `description` / `due_date` / `status` の 4 項目のみ）
+- 更新シナリオ（例: `priority` 追加）は **`exp/*` ブランチ** で実施し、ベースラインと混在させない
 - 更新シナリオ実施後のメトリクスを記録する
 - 従来構成リポジトリ作成時の **クローン元** となる
 
@@ -40,6 +41,7 @@
 | シナリオ | ドキュメント |
 |----------|--------------|
 | バックエンド API 仕様変更 | [api-spec-change.md](./experiment/scenarios/api-spec-change.md) |
+| DB / クエリ変更（タイトル検索） | [db-schema-change.md](./experiment/scenarios/db-schema-change.md) |
 | Laravel バージョン更新 | [laravel-upgrade.md](./experiment/scenarios/laravel-upgrade.md) |
 | テストツール更新 | [test-tool-upgrade.md](./experiment/scenarios/test-tool-upgrade.md) |
 | JavaScript ライブラリ変更 | [js-library-change.md](./experiment/scenarios/js-library-change.md) |
@@ -47,6 +49,16 @@
 **原則:** 1 シナリオ = 1 実験ラン。両リポジトリに **同一の変更内容** を適用し、メトリクスを比較する。
 
 ## 評価指標
+
+### 主評価指標（構成差の比較に必須）
+
+| 優先 | 指標 | 取得方法 |
+|------|------|----------|
+| **1** | 修正工数（変更ファイル数・行数） | `composer experiment:metrics -- --diff-ref experiment-baseline-v1` の `git.files_changed` / `lines_added` / `lines_deleted`（**after_fix** フェーズ） |
+| **2** | 更新直後のテスト失敗数 | 同上の `phpunit.fail` / `newman.fail`（**after_update** フェーズ） |
+| **3** | 作業時間（分） | [metrics-record-template.md](./experiment/metrics-record-template.md) に手動記録 |
+
+> **注意:** シナリオ 1（API 仕様変更）では **通過率だけでは改良構成と従来構成の差が出ない** 場合がある。修正ファイル数の差を主に見ること。
 
 ### 1. テスト通過率
 

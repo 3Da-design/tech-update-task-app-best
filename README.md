@@ -29,7 +29,8 @@
 |------|------|
 | **ゴール** | 設計（モジュール化 + CI/CD）が技術更新時の影響をどれだけ抑えられるかを定量的に示す |
 | **本リポジトリ** | 改良構成（Controller / Service / Repository + Interface） |
-| **対照** | 完成後に本リポジトリをクローンし、タスク領域を Controller 直 DB の従来構成に戻した別リポジトリ |
+| **ベースライン** | **`main` = 4 属性タスク**（`experiment-baseline-v1` タグ）。`priority` 等のシナリオ変更は `exp/*` ブランチのみ |
+| **対照** | 同一リポジトリの `legacy-architecture` ブランチ（タスク領域を Controller 直 DB に戻した従来構成） |
 | **比較条件** | 同一アプリ（タスク管理）、同一スタック（Laravel）、同一 CI ワークフロー |
 | **評価スコープ** | **アプリ全体**（認証・プロフィール・タスク・CI 全ジョブ） |
 
@@ -206,7 +207,7 @@ docker compose --profile node run --rm node npm run test:api
 
 ```bash
 ./scripts/check-quality.sh
-composer experiment:metrics -- --phase baseline
+composer experiment:metrics -- --phase baseline --diff-ref experiment-baseline-v1
 git tag -a experiment-baseline-v1 -m "Experiment baseline: improved architecture"
 ```
 
@@ -219,10 +220,10 @@ git tag -a experiment-baseline-v1 -m "Experiment baseline: improved architecture
 ```bash
 git checkout -b exp/api-spec-change experiment-baseline-v1
 # … シナリオに沿って変更 …
-composer experiment:metrics -- --phase after_update
+composer experiment:metrics -- --phase after_update --diff-ref experiment-baseline-v1
 # … テスト・コードを修正 …
 ./scripts/check-quality.sh
-composer experiment:metrics -- --phase after_fix
+composer experiment:metrics -- --phase after_fix --diff-ref experiment-baseline-v1
 ```
 
 ### 3. 記録
@@ -240,6 +241,7 @@ composer experiment:metrics -- --phase after_fix
 | シナリオ | ドキュメント |
 |----------|--------------|
 | バックエンド API 仕様変更 | [api-spec-change.md](docs/experiment/scenarios/api-spec-change.md) |
+| DB / クエリ変更 | [db-schema-change.md](docs/experiment/scenarios/db-schema-change.md) |
 | Laravel バージョン更新 | [laravel-upgrade.md](docs/experiment/scenarios/laravel-upgrade.md) |
 | テストツール更新 | [test-tool-upgrade.md](docs/experiment/scenarios/test-tool-upgrade.md) |
 | JavaScript ライブラリ変更 | [js-library-change.md](docs/experiment/scenarios/js-library-change.md) |
@@ -250,9 +252,10 @@ composer experiment:metrics -- --phase after_fix
 
 | 指標 | 概要 | 取得 |
 |------|------|------|
-| **テスト通過率** | PHPUnit / Newman 等の成功 ÷ 総数 | `composer experiment:metrics` |
-| **修正工数** | 作業時間、変更ファイル数、diff、コミット数 | 手動 + `git diff --stat` |
-| **エラー発生率** | PHPStan 件数、CI 失敗ジョブ、手動不具合 | スクリプト + 手動 |
+| **修正工数（主）** | 変更ファイル数・追加/削除行 | `composer experiment:metrics -- --diff-ref experiment-baseline-v1` の `git.*` |
+| **テスト通過率** | PHPUnit / Newman 等の成功 ÷ 総数 | 同上（特に `after_update` の失敗数） |
+| **作業時間** | 分 | 手動（テンプレート） |
+| **エラー発生率** | PHPStan 件数、CI 失敗ジョブ | スクリプト + 手動 |
 
 定義の詳細: [docs/EXPERIMENT.md](docs/EXPERIMENT.md)
 
@@ -262,6 +265,7 @@ composer experiment:metrics -- --phase after_fix
 
 | ドキュメント | 内容 |
 |--------------|------|
+| [docs/COMPARABILITY.md](docs/COMPARABILITY.md) | 比較可能化の修正内容（本ドキュメント） |
 | [docs/EXPERIMENT.md](docs/EXPERIMENT.md) | 実験設計・指標・フェーズ |
 | [docs/FeatureList.md](docs/FeatureList.md) | 機能一覧 |
 | [docs/TESTING.md](docs/TESTING.md) | テストツールの使い方 |

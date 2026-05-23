@@ -53,6 +53,10 @@
 | `newman.total` | `newman_total` |
 | `phpstan.error_count` | `phpstan_errors` |
 | `eslint.ok` | `eslint_ok` |
-| `git.shortstat` | `lines_added` / `lines_deleted`（要パース） |
+| `git.diff_shortstat` | `lines_added` / `lines_deleted`（要パース） |
+| `git.files_changed` | `files_changed` |
+| `git.lines_added` | `lines_added` |
+| `git.lines_deleted` | `lines_deleted` |
+| `git.diff_ref` | メモ（比較起点 tag） |
 
 手動項目（`work_minutes`, `commits`, `manual_bugs`, `ci_jobs_*`）は実験者が記入します。

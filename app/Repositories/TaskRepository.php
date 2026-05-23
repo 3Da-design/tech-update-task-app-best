@@ -24,7 +24,7 @@ class TaskRepository implements TaskRepositoryInterface
 
     $dueSort = $filters['due_date_sort'] ?? 'asc';
     $direction = $dueSort === 'desc' ? 'desc' : 'asc';
-    $query->orderByRaw('due_date IS NULL ASC')->orderBy('due_date', $direction)->orderBy('id');
+    $query->orderByRaw('due_date IS NULL DESC')->orderBy('due_date', $direction)->orderBy('id');
 
     /** @var Collection<int, Task> */
     return $query->get();

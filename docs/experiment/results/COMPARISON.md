@@ -1,6 +1,10 @@
 # 改良構成 vs 従来構成 — 実験比較表
 
-本ドキュメントは、4 つの更新シナリオについて **改良構成（improved）** と **従来構成（legacy）** で実施した 3 フェーズ計測の要約です。詳細 JSON は各サブディレクトリを参照してください。
+本ドキュメントは、更新シナリオについて **改良構成（improved）** と **従来構成（legacy）** で実施した 3 フェーズ計測の要約です。詳細 JSON は各サブディレクトリを参照してください。
+
+> **比較の読み方:** `after_update` の PHPUnit / Newman **通過率は構成によって同一になることがある**（同一テストスイートのため）。構成差の主指標は **`after_fix` の `git.files_changed` / `lines_added` / `lines_deleted`**（`composer experiment:metrics -- --diff-ref experiment-baseline-v1`）とする。詳細は [EXPERIMENT.md](../EXPERIMENT.md) を参照。
+
+> **main ブランチ:** タスクのベースライン仕様（4 属性）。`priority` 追加などのシナリオ 1 の結果は **履歴** として本表に残すが、新規実験の起点は `experiment-baseline-v1` タグを使用すること。
 
 ## シナリオ 1: バックエンド API 仕様変更（`priority` 追加）
 

@@ -109,6 +109,7 @@ def spreadsheet_row(
     nm = data.get("newman", {})
     ps = data.get("phpstan", {})
     es = data.get("eslint", {})
+    git = data.get("git", {})
     json_rel = f"experiment/metrics/runs/{run_id}/{phase}.json"
 
     return [
@@ -126,12 +127,13 @@ def spreadsheet_row(
         "1" if es.get("ok") else "0",
         "",
         "",
-        "",
-        "",
+        str(git.get("files_changed", "")),
+        str(git.get("lines_added", "")),
+        str(git.get("lines_deleted", "")),
         "",
         "",
         json_rel,
-        "",
+        str(git.get("diff_shortstat", "")),
     ]
 
 
@@ -196,8 +198,16 @@ def build_markdown(run_id: str, scenario: str, phases: dict[str, dict | None]) -
             lines.append(f"- **JSON:** `{json_path}` — **なし**\n\n")
             continue
         stat = data.get("git", {}).get("diff_shortstat", "") or "（なし）"
+        files_changed = data.get("git", {}).get("files_changed", "")
+        lines_added = data.get("git", {}).get("lines_added", "")
+        lines_deleted = data.get("git", {}).get("lines_deleted", "")
+        diff_ref = data.get("git", {}).get("diff_ref") or ""
         lines.append(f"- **JSON:** [`{phase}.json`]({json_path})\n")
-        lines.append(f"- **git diff_shortstat:** `{stat}`\n\n")
+        if diff_ref:
+            lines.append(f"- **git diff_ref:** `{diff_ref}`\n")
+        lines.append(
+            f"- **git:** {files_changed} files, +{lines_added} / -{lines_deleted} (`{stat}`)\n\n"
+        )
 
     lines.append('<a id="tsv"></a>\n\n<details>\n<summary>スプレッドシート用 TSV（全列）</summary>\n\n')
     lines.append("```tsv\n")

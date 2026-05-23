@@ -7,6 +7,7 @@ cd "$ROOT"
 
 PHASE="baseline"
 RUN_ID=""
+DIFF_REF=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --phase)
@@ -15,6 +16,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --run)
       RUN_ID="${2:?--run requires a value}"
+      shift 2
+      ;;
+    --diff-ref)
+      DIFF_REF="${2:?--diff-ref requires a value}"
       shift 2
       ;;
     *)
@@ -214,8 +219,34 @@ PY
 fi
 
 GIT_SHORTSTAT=""
+GIT_FILES_CHANGED=""
+GIT_LINES_ADDED=""
+GIT_LINES_DELETED=""
 if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-  GIT_SHORTSTAT="$(git diff --shortstat 2>/dev/null | tr -d '\n' || true)"
+  if [[ -n "$DIFF_REF" ]]; then
+    GIT_SHORTSTAT="$(git diff --shortstat "${DIFF_REF}..HEAD" 2>/dev/null | tr -d '\n' || true)"
+  else
+    GIT_SHORTSTAT="$(git diff --shortstat 2>/dev/null | tr -d '\n' || true)"
+  fi
+  if [[ -n "$GIT_SHORTSTAT" ]]; then
+    read -r GIT_FILES_CHANGED GIT_LINES_ADDED GIT_LINES_DELETED < <(
+      python3 - "$GIT_SHORTSTAT" <<'PY'
+import re, sys
+text = sys.argv[1].strip()
+files = additions = deletions = 0
+m = re.search(r"(\d+)\s+files?\s+changed", text)
+if m:
+    files = int(m.group(1))
+m = re.search(r"(\d+)\s+insertions?\(\+\)", text)
+if m:
+    additions = int(m.group(1))
+m = re.search(r"(\d+)\s+deletions?\(-\)", text)
+if m:
+    deletions = int(m.group(1))
+print(files, additions, deletions)
+PY
+    )
+  fi
 fi
 
 phpunit_rate="0"
@@ -230,7 +261,8 @@ fi
 
 export OUTPUT PHASE TIMESTAMP RUN_ID PHPSTAN_EXIT PHPSTAN_ERRORS ESLINT_EXIT BUILD_EXIT PHPUNIT_EXIT NEWMAN_EXIT
 export PHPUNIT_PASS PHPUNIT_FAIL PHPUNIT_TOTAL NEWMAN_PASS NEWMAN_FAIL NEWMAN_TOTAL
-export phpunit_rate newman_rate GIT_SHORTSTAT
+export phpunit_rate newman_rate GIT_SHORTSTAT DIFF_REF
+export GIT_FILES_CHANGED GIT_LINES_ADDED GIT_LINES_DELETED
 
 python3 - <<'PY'
 import json, os
@@ -269,6 +301,10 @@ doc = {
         "ok": int(os.environ["NEWMAN_EXIT"]) == 0,
     },
     "git": {
+        "diff_ref": os.environ.get("DIFF_REF", "") or None,
+        "files_changed": int(os.environ.get("GIT_FILES_CHANGED") or 0),
+        "lines_added": int(os.environ.get("GIT_LINES_ADDED") or 0),
+        "lines_deleted": int(os.environ.get("GIT_LINES_DELETED") or 0),
         "diff_shortstat": os.environ.get("GIT_SHORTSTAT", ""),
     },
 }

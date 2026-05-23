@@ -22,6 +22,13 @@ class TaskApiTest extends TestCase
     ]);
   }
 
+  public function test_guest_cannot_access_api_tasks(): void
+  {
+    $response = $this->getJson('/api/tasks');
+
+    $response->assertUnauthorized();
+  }
+
   /** 使用表: GET 一覧 200・件数 */
   public function test_index_returns_200_and_task_count(): void
   {
@@ -30,7 +37,6 @@ class TaskApiTest extends TestCase
       'title' => 'A',
       'description' => null,
       'status' => 'todo',
-      'priority' => 'medium',
       'due_date' => null,
     ]);
 
@@ -46,7 +52,6 @@ class TaskApiTest extends TestCase
     $response = $this->actingAs($this->user)->postJson('/api/tasks', [
       'title' => 'New Task',
       'status' => 'todo',
-      'priority' => 'medium',
     ]);
 
     $response->assertCreated();
@@ -60,7 +65,6 @@ class TaskApiTest extends TestCase
     $response = $this->actingAs($this->user)->postJson('/api/tasks', [
       'title' => 't',
       'status' => 'invalid',
-      'priority' => 'medium',
     ]);
 
     $response->assertStatus(422);
@@ -72,7 +76,6 @@ class TaskApiTest extends TestCase
   {
     $response = $this->actingAs($this->user)->postJson('/api/tasks', [
       'status' => 'todo',
-      'priority' => 'medium',
     ]);
 
     $response->assertStatus(422);
@@ -88,7 +91,6 @@ class TaskApiTest extends TestCase
       'title' => 'Old',
       'description' => null,
       'status' => 'todo',
-      'priority' => 'medium',
       'due_date' => null,
     ]);
 
@@ -121,7 +123,6 @@ class TaskApiTest extends TestCase
       'title' => 'To delete',
       'description' => null,
       'status' => 'todo',
-      'priority' => 'medium',
       'due_date' => null,
     ]);
 

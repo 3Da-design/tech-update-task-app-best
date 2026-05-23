@@ -27,7 +27,6 @@ class TaskWebTest extends TestCase
       'title' => 'Web task',
       'description' => null,
       'status' => 'todo',
-      'priority' => 'medium',
       'due_date' => null,
     ]);
 
@@ -49,7 +48,6 @@ class TaskWebTest extends TestCase
     $response = $this->actingAs($this->user)->post('/tasks', [
       'title' => 'New web task',
       'status' => 'todo',
-      'priority' => 'medium',
     ]);
 
     $response->assertRedirect(route('tasks.index'));
@@ -76,7 +74,6 @@ class TaskWebTest extends TestCase
       'title' => 'Before',
       'description' => null,
       'status' => 'todo',
-      'priority' => 'medium',
       'due_date' => null,
     ]);
 
@@ -103,7 +100,6 @@ class TaskWebTest extends TestCase
       'title' => 'To delete',
       'description' => null,
       'status' => 'todo',
-      'priority' => 'medium',
       'due_date' => null,
     ]);
 
