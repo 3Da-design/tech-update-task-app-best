@@ -1,7 +1,7 @@
-# tech-update-task-app
+# tech-update-task-app-legacy
 
-技術更新時の影響を定量評価するための **改良構成（良い例）** 実験台です。  
-同一機能のタスク管理アプリを、Controller / Service / Repository 分離と CI/CD で守り、更新シナリオごとに従来構成（別リポジトリ）と比較します。
+技術更新時の影響を定量評価するための **従来構成（悪い例）** 実験台です。  
+同一機能のタスク管理アプリを、Controller に業務ロジックと DB アクセスを集中させた密結合構成で実装し、改良構成（別リポジトリ）と更新シナリオごとに比較します。
 
 [![CI](https://github.com/OWNER/tech-update-task-app/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/tech-update-task-app/actions/workflows/ci.yml)
 
@@ -28,10 +28,10 @@
 | 項目 | 内容 |
 |------|------|
 | **ゴール** | 設計（モジュール化 + CI/CD）が技術更新時の影響をどれだけ抑えられるかを定量的に示す |
-| **本リポジトリ** | 改良構成（Controller / Service / Repository + Interface） |
-| **ベースライン** | **`main` = 4 属性タスク**（`experiment-baseline-v1` タグ）。`priority` 等のシナリオ変更は `exp/*` ブランチのみ |
-| **対照** | 同一リポジトリの `legacy-architecture` ブランチ（タスク領域を Controller 直 DB に戻した従来構成） |
-| **比較条件** | 同一アプリ（タスク管理）、同一スタック（Laravel）、同一 CI ワークフロー |
+| **本リポジトリ** | 従来構成（Fat Controller、Service/Repository なし、Web/API でロジック重複） |
+| **ベースライン** | **`legacy-architecture` ブランチ**（`experiment-baseline-v1` タグ）。`priority` 等のシナリオ変更は `exp/legacy-*` ブランチで実施 |
+| **対照** | 改良構成リポジトリ（`tech-update-task-app` 等、Controller / Service / Repository 分離） |
+| **比較条件** | 同一アプリ（タスク管理）、同一スタック（Laravel）、同一 CI ワークフロー・同一 Feature テスト |
 | **評価スコープ** | **アプリ全体**（認証・プロフィール・タスク・CI 全ジョブ） |
 
 詳細は [docs/EXPERIMENT.md](docs/EXPERIMENT.md) を参照してください。
@@ -40,58 +40,40 @@
 
 ## アーキテクチャ
 
-### タスク領域（改良構成の核）
+### タスク領域（従来構成の核）
 
 ```text
 HTTP (Web / API)
     │
     ▼
-TaskController (Web / API)   … HTTP の受け渡しのみ
+TaskController (Web / API)   … 認可・正規化・クエリ・永続化をすべて内包
     │
     ▼
-TaskService                  … 認可・入力正規化・ユースケース
-    │
-    ▼
-TaskRepositoryInterface
-    │
-    ▼
-TaskRepository               … Eloquent による永続化
-    │
-    ▼
-Task (Model)
+Task (Model)               … Eloquent を Controller から直接操作
 ```
 
 | レイヤ | クラス |
 |--------|--------|
-| Web | `App\Http\Controllers\Web\TaskController` |
-| API | `App\Http\Controllers\API\TaskController` |
-| Service | `App\Services\TaskService` |
-| Repository | `App\Repositories\TaskRepository` |
-| Interface | `App\Repositories\Contracts\TaskRepositoryInterface` |
-| DI | `App\Providers\RepositoryServiceProvider` |
+| Web | `App\Http\Controllers\Web\TaskController`（Fat Controller） |
+| API | `App\Http\Controllers\API\TaskController`（Fat Controller、ロジック重複） |
 | 入出力 | `StoreTaskRequest`, `UpdateTaskRequest`, `TaskResource` |
 
-Web と API は **同じ `TaskService`** を共有するため、API 仕様変更時の修正を Service / Repository 周辺に集約しやすい構成です。
+Web と API は **同じロジックをそれぞれの Controller に重複実装** しているため、仕様変更時に修正箇所が分散しやすい構成です。
 
 ### 認証・プロフィール
 
-Laravel Breeze 標準（Controller から User Model を直接操作）。  
-比較実験の「悪い例」は **別リポジトリのタスク領域** で再現し、Laravel / テストツール / JS 更新の影響は全体メトリクスに含めます。
+Laravel Breeze 標準（Controller から User Model を直接操作）。タスク領域と同様の「Controller 直操作」寄りです。
 
 ### ディレクトリ（タスク関連）
 
 ```text
 app/
-├── Http/
-│   ├── Controllers/
-│   │   ├── API/TaskController.php
-│   │   └── Web/TaskController.php
-│   ├── Requests/          # バリデーション
-│   └── Resources/         # API JSON
-├── Services/TaskService.php
-└── Repositories/
-    ├── Contracts/TaskRepositoryInterface.php
-    └── TaskRepository.php
+└── Http/
+    ├── Controllers/
+    │   ├── API/TaskController.php   # 業務ロジック + DB 直アクセス
+    │   └── Web/TaskController.php   # 同上（重複）
+    ├── Requests/          # バリデーション（維持）
+    └── Resources/         # API JSON（維持）
 ```
 
 ---
@@ -203,12 +185,12 @@ docker compose --profile node run --rm node npm run test:api
 
 ### 1. ベースラインの確立
 
-改良構成が CI 緑の状態で:
+従来構成が CI 緑の状態で:
 
 ```bash
 ./scripts/check-quality.sh
 composer experiment:metrics -- --phase baseline --diff-ref experiment-baseline-v1
-git tag -a experiment-baseline-v1 -m "Experiment baseline: improved architecture"
+git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture"
 ```
 
 メトリクス JSON は `experiment/metrics/` に出力されます（Git 管理外）。
@@ -230,9 +212,9 @@ composer experiment:metrics -- --phase after_fix --diff-ref experiment-baseline-
 
 [docs/experiment/metrics-record-template.md](docs/experiment/metrics-record-template.md) の列定義に従い、スプレッドシート等に記録します。
 
-### 4. 従来構成との比較
+### 4. 改良構成との比較
 
-本リポジトリをクローンし、[docs/experiment/LEGACY_MIGRATION.md](docs/experiment/LEGACY_MIGRATION.md) に従ってタスク領域を従来構成に戻したうえで、**同じシナリオ・同じ手順** を繰り返します。
+改良構成リポジトリで **同じシナリオ・同じ手順** を実施し、メトリクスを [docs/experiment/results/COMPARISON.md](docs/experiment/results/COMPARISON.md) の形式で比較します。本リポジトリの作成手順は [docs/experiment/LEGACY_MIGRATION.md](docs/experiment/LEGACY_MIGRATION.md) を参照してください。
 
 ---
 
