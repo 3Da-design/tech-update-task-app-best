@@ -41,6 +41,8 @@ git remote add origin <new-legacy-repo-url>
 
 ## 3. 動作・CI の確認
 
+legacy リポジトリの Docker は改良構成と **ポート・コンテナ名を分離** 済み（Web `8001` / DB `5433`）。`.env.example` をコピーし `APP_HTTP_PORT=8001` 等を設定してから:
+
 ```bash
 docker compose up -d
 docker compose exec app php artisan migrate --seed
