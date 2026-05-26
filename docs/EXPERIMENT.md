@@ -1,25 +1,25 @@
-# 実験設計（改良構成）
+# 実験設計（従来構成）
 
-本リポジトリは、技術更新時の影響を定量評価するための **改良構成（良い例）** の実験台です。
+本リポジトリは、技術更新時の影響を定量評価するための **従来構成（悪い例）** の実験台です。
 
 ## 研究ゴール
 
-**設計（モジュール化 + CI/CD）が、技術更新時の影響をどれだけ抑えられるか**を、従来構成（別リポジトリ）と比較して定量的に示す。
+**設計（モジュール化 + CI/CD）が、技術更新時の影響をどれだけ抑えられるか**を、改良構成（別リポジトリ）と比較して定量的に示す。
 
-| 比較軸 | 従来構成（別リポジトリで作成予定） | 本リポジトリ（改良構成） |
-|--------|-----------------------------------|-------------------------|
+| 比較軸 | 本リポジトリ（従来構成） | 改良構成（別リポジトリ） |
+|--------|-------------------------|-------------------------|
 | 構造 | モノリシック、Controller にロジック集中、DB 直接操作 | Controller / Service / Repository 分離、Interface による抽象化 |
-| CI/CD | 本リポジトリと **同一ワークフロー** をコピーして揃える | GitHub Actions（4 ジョブ） |
+| CI/CD | 改良構成と **同一ワークフロー** | GitHub Actions（4 ジョブ） |
 | アプリ | 同一機能のタスク管理（Laravel） | 同一 |
 
 ## 本リポジトリの役割
 
-- 改良構成の **ベースライン** を確立する（**`main` ブランチ = `experiment-baseline-v1` 相当**。タスク属性は `title` / `description` / `due_date` / `status` の 4 項目のみ）
-- 更新シナリオ（例: `priority` 追加）は **`exp/*` ブランチ** で実施し、ベースラインと混在させない
+- 従来構成の **ベースライン** を確立する（**`experiment-baseline-v1` タグ** 推奨。タスク属性は `title` / `description` / `due_date` / `status` の 4 項目のみ）
+- 更新シナリオ（例: `priority` 追加）は **`exp/legacy-*` ブランチ** で実施し、ベースラインと混在させない
 - 更新シナリオ実施後のメトリクスを記録する
-- 従来構成リポジトリ作成時の **クローン元** となる
+- 改良構成リポジトリと **同一シナリオ・同一手順** で比較する
 
-従来構成へのリファクタ手順は [experiment/LEGACY_MIGRATION.md](./experiment/LEGACY_MIGRATION.md) を参照してください（本リポジトリでは実施しません）。
+本リポジトリの作成手順（改良構成からの移行記録）は [experiment/LEGACY_MIGRATION.md](./experiment/LEGACY_MIGRATION.md) を参照してください。
 
 ## 比較条件
 
@@ -31,8 +31,8 @@
 
 ### アーキテクチャの範囲
 
-- **タスク領域（改良の核）:** `Controller` → `TaskService` → `TaskRepositoryInterface` → `TaskRepository` → Eloquent
-- **認証・プロフィール:** Laravel Breeze 標準（Controller から Model 直接）。構造は「悪い例」だが、Laravel / テストツール / JS 更新の影響は **全体メトリクスに含める**
+- **タスク領域（従来の核）:** `Web\TaskController` / `API\TaskController` から Eloquent を直接操作（Service / Repository なし、Web と API でロジック重複）
+- **認証・プロフィール:** Laravel Breeze 標準（Controller から Model 直接）。Laravel / テストツール / JS 更新の影響は **全体メトリクスに含める**
 
 ## 更新シナリオ
 
@@ -58,7 +58,7 @@
 | **2** | 更新直後のテスト失敗数 | 同上の `phpunit.fail` / `newman.fail`（**after_update** フェーズ） |
 | **3** | 作業時間（分） | [metrics-record-template.md](./experiment/metrics-record-template.md) に手動記録 |
 
-> **注意:** シナリオ 1（API 仕様変更）では **通過率だけでは改良構成と従来構成の差が出ない** 場合がある。修正ファイル数の差を主に見ること。
+> **注意:** シナリオ 1（API 仕様変更）では **通過率だけでは改良構成と従来構成の差が出ない** 場合がある。修正ファイル数の差を主に見ること（従来構成では `Web\TaskController` と `API\TaskController` の両方を直すことが多い）。
 
 ### 1. テスト通過率
 
@@ -109,34 +109,31 @@
 
 ## ベースラインの確立
 
-改良構成が完成し、CI がすべて成功したら:
+従来構成で CI がすべて成功したら:
 
 ```bash
-git tag -a experiment-baseline-v1 -m "Experiment baseline: improved architecture"
+git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture"
 ```
 
 以降のシナリオはこのタグからブランチを切ることを推奨します。
 
 ## 実験の進め方（概要）
 
-1. ベースライン tag を作成
-2. シナリオ用ブランチを切る（例: `exp/api-spec-change`）
+1. ベースライン tag を作成（または `experiment-baseline-v1` を確認）
+2. シナリオ用ブランチを切る（例: `exp/legacy-api-spec-change`）
 3. [scenarios/](./experiment/scenarios/) に従い更新を適用
 4. `after_update` でメトリクス収集
 5. テスト・コードを修正し CI を緑にする
 6. `after_fix` でメトリクス収集
 7. [metrics-record-template.md](./experiment/metrics-record-template.md) に記録
-8. 従来構成リポジトリで 3〜7 を繰り返し、比較表を作成
+8. 改良構成リポジトリで 3〜7 を繰り返し、[results/COMPARISON.md](./experiment/results/COMPARISON.md) で比較
 
 ## 実験結果（収集済み）
 
 | ドキュメント | 内容 |
 |--------------|------|
-| [experiment/results/COMPARISON.md](./experiment/results/COMPARISON.md) | 全シナリオの 3 フェーズ比較表 |
-| [experiment/results/api-spec-change/](./experiment/results/api-spec-change/) | シナリオ1（改良） |
-| [experiment/results/legacy/api-spec-change/](./experiment/results/legacy/api-spec-change/) | シナリオ1（従来・`legacy-architecture` ブランチ） |
-
-従来構成の実装は **`legacy-architecture` ブランチ** にあります（別リポジトリの代わり）。
+| [experiment/results/COMPARISON.md](./experiment/results/COMPARISON.md) | 全シナリオの 3 フェーズ比較表（改良 vs 従来） |
+| [experiment/results/legacy/api-spec-change/](./experiment/results/legacy/api-spec-change/) | シナリオ1（従来構成・本リポジトリ） |
 
 ## 関連ドキュメント
 
@@ -145,5 +142,6 @@ git tag -a experiment-baseline-v1 -m "Experiment baseline: improved architecture
 | [README.md](../README.md) | プロジェクト概要・クイックスタート |
 | [TESTING.md](./TESTING.md) | テストツールの詳細 |
 | [CI.md](./CI.md) | GitHub Actions |
-| [FeatureList.md](./FeatureList.md) | 機能一覧 |
+| [FEATURE_LIST.md](./FEATURE_LIST.md) | 機能一覧 |
 | [experiment/metrics-record-template.md](./experiment/metrics-record-template.md) | 記録テンプレート |
+| [experiment/LEGACY_MIGRATION.md](./experiment/LEGACY_MIGRATION.md) | 改良構成から本リポジトリを作った際の移行記録 |

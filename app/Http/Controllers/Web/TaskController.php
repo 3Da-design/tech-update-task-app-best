@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Http\Controllers\Concerns\ParsesTaskRouteId;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\IndexTaskRequest;
 use App\Http\Requests\StoreTaskRequest;
@@ -16,8 +15,6 @@ use Illuminate\View\View;
 
 class TaskController extends Controller
 {
-  use ParsesTaskRouteId;
-
   public function index(IndexTaskRequest $request): View
   {
     $userId = $this->currentUserId();
@@ -216,5 +213,14 @@ class TaskController extends Controller
   private function escapeLike(string $value): string
   {
     return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
+  }
+
+  private function parseTaskId(string $id): int
+  {
+    if (! ctype_digit($id)) {
+      abort(404);
+    }
+
+    return (int) $id;
   }
 }
