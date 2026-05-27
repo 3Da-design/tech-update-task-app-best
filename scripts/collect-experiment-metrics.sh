@@ -175,6 +175,11 @@ else
 fi
 
 echo ">> Newman"
+<<<<<<< HEAD
+=======
+# shellcheck source=lib/app-base-url.sh
+source "${ROOT}/scripts/lib/app-base-url.sh"
+>>>>>>> 4e292e7 (Change Docker 2)
 if ! curl -sf "${APP_BASE_URL}/up" > /dev/null 2>&1; then
   echo "Starting docker compose..."
   docker compose up -d

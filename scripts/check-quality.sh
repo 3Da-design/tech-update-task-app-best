@@ -27,6 +27,34 @@ if [[ "${health}" != "healthy" ]]; then
   exit 1
 fi
 
+if ! grep -q 'tech-update-task-app-legacy' "${ROOT}/docker-compose.yml" 2>/dev/null; then
+  echo "ERROR: legacy 用の docker-compose.yml が見つかりません（実行ディレクトリを確認してください）。"
+  exit 1
+fi
+
+# shellcheck source=lib/app-base-url.sh
+source "${ROOT}/scripts/lib/app-base-url.sh"
+
+echo "== Ensure Docker services (postgres) =="
+docker compose up -d postgres
+POSTGRES_ID="$(docker compose ps -q postgres)"
+if [[ -z "${POSTGRES_ID}" ]]; then
+  echo "ERROR: postgres container id not found. docker compose ps で状態を確認してください。"
+  exit 1
+fi
+for _ in $(seq 1 30); do
+  health="$(docker inspect -f '{{.State.Health.Status}}' "${POSTGRES_ID}" 2>/dev/null || true)"
+  if [[ "${health}" == "healthy" ]]; then
+    break
+  fi
+  sleep 1
+done
+health="$(docker inspect -f '{{.State.Health.Status}}' "${POSTGRES_ID}" 2>/dev/null || true)"
+if [[ "${health}" != "healthy" ]]; then
+  echo "ERROR: postgres is not healthy (status=${health}). docker compose logs postgres で確認してください。"
+  exit 1
+fi
+
 echo "== PHPStan (実行前・型・構造) =="
 docker compose exec -T app composer phpstan
 
