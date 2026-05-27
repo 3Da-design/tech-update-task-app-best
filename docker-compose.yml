@@ -38,6 +38,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      - node_modules_legacy:/var/www/html/node_modules
     networks:
       - app-network
     ports:
@@ -86,3 +87,4 @@ networks:
 
 volumes:
   postgres_data_legacy:
+  node_modules_legacy:
