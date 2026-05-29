@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 # legacy ローカル Docker の HTTP ベース URL（check-quality.sh 等から source）
 # .env の APP_HTTP_PORT があれば優先、なければ 8001
-<<<<<<< HEAD
-=======
 set -euo pipefail
 
->>>>>>> 4e292e7 (Change Docker 2)
 _app_base_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APP_HTTP_PORT="${APP_HTTP_PORT:-8001}"
 if [[ -f "${_app_base_root}/.env" ]]; then
@@ -16,7 +13,3 @@ if [[ -f "${_app_base_root}/.env" ]]; then
 fi
 export APP_HTTP_PORT
 export APP_BASE_URL="http://localhost:${APP_HTTP_PORT}"
-<<<<<<< HEAD
-=======
-
->>>>>>> 4e292e7 (Change Docker 2)

@@ -27,11 +27,7 @@ Laravel の CSRF 不一致です。次を試してください。
 1. Postman の **Cookies** → `localhost` をすべて削除
 2. **Auth** フォルダだけを先に Run（GET /login → POST /login）
 3. 成功したら **Tasks API** を Run
-<<<<<<< HEAD
 4. `baseUrl` が `http://localhost:8001` であること（legacy Docker。`127.0.0.1` と混在しない）
-=======
-4. `baseUrl` が `http://localhost:8001` であること（`127.0.0.1` と混在しない）
->>>>>>> 4e292e7 (Change Docker 2)
 
 修正済みコレクションでは、GET /login の HTML から **平文の csrf-token** だけを `csrfToken` に保存します。
 

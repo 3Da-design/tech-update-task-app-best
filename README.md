@@ -101,11 +101,7 @@ app/
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) など Compose v2 対応環境
 - 開発フローは **Docker Compose のみ**（ホストで `php artisan serve` は使わない。Web は **ポート `8001`**、DB 公開は **5433**）
-<<<<<<< HEAD
 - 改良構成（`tech-update-task-app`）と **同時に起動可能**（コンテナ名・ポート・ボリュームを分離済み）
-=======
-- 改良構成（`tech-update-task-app`）と **同時起動可能**（コンテナ名・ポート・ボリュームを分離）
->>>>>>> 4e292e7 (Change Docker 2)
 - **フロント（npm）は Docker の `node` サービスのみ**（ホストで `npm install` / `npm ci` しない。`node_modules` の混在で `ENOTEMPTY` などが起きる）
 
 ### 初回セットアップ
@@ -124,11 +120,8 @@ composer npm:docker-build
 ```
 
 ブラウザで `http://localhost:8001` を開きます。シードユーザー: `test@example.com` / `password`
-<<<<<<< HEAD
 
 > `.env` は `.env.example` をコピーし、`APP_HTTP_PORT=8001` 等が入っていることを確認してください。
-=======
->>>>>>> 4e292e7 (Change Docker 2)
 
 ### よく使うコマンド
 
