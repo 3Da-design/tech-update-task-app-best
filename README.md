@@ -157,7 +157,7 @@ chmod +x scripts/curl-api-smoke.sh
 ホストに Node が入っていても、**依存のインストール・ビルドはコンテナ内だけ**で行います。
 
 ```bash
-composer npm:docker-ci      # rm -rf node_modules && npm ci
+composer npm:docker-ci      # コンテナ内 npm ci（node_modules はボリューム分離）
 composer npm:docker-build   # 上記 + npm run build
 docker compose --profile node run --rm node npm run lint
 docker compose --profile node run --rm --service-ports node npm run dev   # Vite 開発サーバー
@@ -202,8 +202,12 @@ git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture"
 
 [docs/experiment/scenarios/](docs/experiment/scenarios/) の手順に従い、ブランチで変更を適用します。
 
+**実験ブランチは必ず `main` から切ってください**（`experiment-baseline-v1` タグだけから切ると、Docker が 8000/改良構成と衝突する古い `docker-compose.yml` になる場合があります）。
+
 ```bash
-git checkout -b exp/api-spec-change experiment-baseline-v1
+git checkout main
+git pull origin main
+git checkout -b exp/your-scenario-name
 # … シナリオに沿って変更 …
 composer experiment:metrics -- --phase after_update --diff-ref experiment-baseline-v1
 # … テスト・コードを修正 …
