@@ -202,11 +202,11 @@ git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture"
 
 [docs/experiment/scenarios/](docs/experiment/scenarios/) の手順に従い、ブランチで変更を適用します。
 
-**実験ブランチは必ず `main` から切ってください**（`experiment-baseline-v1` タグだけから切ると、Docker が 8000/改良構成と衝突する古い `docker-compose.yml` になる場合があります）。
+BEFORE（ベースライン）の手順は [docs/experiment/BEFORE.md](docs/experiment/BEFORE.md) を参照。`experiment-baseline-v1` は legacy Docker（**8001**）込みの CI 緑状態を指します（`git pull` のあと `git fetch --tags`）。
 
 ```bash
-git checkout main
-git pull origin main
+git fetch --tags
+git checkout experiment-baseline-v1
 git checkout -b exp/your-scenario-name
 # … シナリオに沿って変更 …
 composer experiment:metrics -- --phase after_update --diff-ref experiment-baseline-v1

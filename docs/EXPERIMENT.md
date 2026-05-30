@@ -109,17 +109,18 @@
 
 ## ベースラインの確立
 
-従来構成で CI がすべて成功したら:
+従来構成で CI がすべて成功したら、`main` の先端にタグを付ける（**legacy Docker: Web 8001 / DB 5433** が含まれること）。
 
 ```bash
-git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture"
+git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture (8001 Docker)"
+git push origin experiment-baseline-v1
 ```
 
-以降のシナリオはこのタグからブランチを切ることを推奨します。
+以降のシナリオはこのタグからブランチを切る（手順: [experiment/BEFORE.md](./experiment/BEFORE.md)）。
 
 ## 実験の進め方（概要）
 
-1. ベースライン tag を作成（または `experiment-baseline-v1` を確認）
+1. [BEFORE.md](./experiment/BEFORE.md)（ベースライン tag・品質ゲート・計測）
 2. シナリオ用ブランチを切る（例: `exp/legacy-api-spec-change`）
 3. [scenarios/](./experiment/scenarios/) に従い更新を適用
 4. `after_update` でメトリクス収集

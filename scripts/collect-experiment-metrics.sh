@@ -6,6 +6,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 # shellcheck source=lib/app-base-url.sh
 source "${ROOT}/scripts/lib/app-base-url.sh"
+# shellcheck source=lib/ensure-docker-stack.sh
+source "${ROOT}/scripts/lib/ensure-docker-stack.sh"
 
 PHASE="baseline"
 RUN_ID=""
@@ -104,6 +106,8 @@ NEWMAN_TOTAL=0
 
 echo "== Collecting experiment metrics (phase: $PHASE, run: $RUN_ID) =="
 
+ensure_docker_stack_running "${ROOT}" "${APP_BASE_URL}"
+
 echo ">> PHPStan"
 set +e
 docker compose exec -T app composer phpstan 2>"$TMP_DIR/phpstan.stderr"
@@ -116,7 +120,8 @@ fi
 
 echo ">> npm dependencies"
 if [[ ! -f node_modules/vite/package.json ]]; then
-  docker compose --profile node run --rm node sh -c "npm ci --no-audit --no-fund"
+  docker compose --profile node run --rm node sh -c \
+    "rm -rf node_modules/* node_modules/.[!.]* node_modules/..?* 2>/dev/null; npm ci --no-audit --no-fund"
 fi
 
 echo ">> ESLint"
@@ -175,17 +180,8 @@ else
 fi
 
 echo ">> Newman"
-# shellcheck source=lib/app-base-url.sh
-source "${ROOT}/scripts/lib/app-base-url.sh"
 if ! curl -sf "${APP_BASE_URL}/up" > /dev/null 2>&1; then
-  echo "Starting docker compose..."
-  docker compose up -d
-  for _ in $(seq 1 30); do
-    if curl -sf "${APP_BASE_URL}/up" > /dev/null 2>&1; then
-      break
-    fi
-    sleep 1
-  done
+  ensure_docker_stack_running "${ROOT}" "${APP_BASE_URL}"
 fi
 
 docker compose exec -T app php artisan migrate --force --seed
