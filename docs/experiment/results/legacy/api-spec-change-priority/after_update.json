@@ -1,0 +1,42 @@
+{
+  "run_id": "run-20260621T044942Z",
+  "phase": "after_update",
+  "recorded_at": "20260621T051520Z",
+  "repository": "improved",
+  "phpstan": {
+    "exit_code": 0,
+    "error_count": 0,
+    "ok": true
+  },
+  "eslint": {
+    "exit_code": 0,
+    "ok": true
+  },
+  "vite_build": {
+    "exit_code": 0,
+    "ok": true
+  },
+  "phpunit": {
+    "exit_code": 1,
+    "pass": 45,
+    "fail": 2,
+    "total": 47,
+    "pass_rate": 95.74,
+    "ok": false
+  },
+  "newman": {
+    "exit_code": 1,
+    "pass": 10,
+    "fail": 3,
+    "total": 13,
+    "pass_rate": 76.92,
+    "ok": false
+  },
+  "git": {
+    "diff_ref": "experiment-baseline-v1",
+    "files_changed": 7,
+    "lines_added": 45,
+    "lines_deleted": 1,
+    "diff_shortstat": " 7 files changed, 45 insertions(+), 1 deletion(-)"
+  }
+}
