@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
  * @property string $status
  * @property Carbon|null $due_date
  */
-#[Fillable(['user_id', 'title', 'description', 'status', 'due_date'])]
+#[Fillable(['user_id', 'title', 'description', 'status', 'priority', 'due_date'])]
 class Task extends Model
 {
   protected function casts(): array
