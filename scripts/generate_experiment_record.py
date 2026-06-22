@@ -94,7 +94,7 @@ def spreadsheet_row(
 ) -> list[str]:
     if data is None:
         return [
-            "improved",
+            "best",
             scenario,
             phase,
             "",
@@ -103,7 +103,7 @@ def spreadsheet_row(
             "",
         ]
 
-    repo = str(data.get("repository", "improved"))
+    repo = str(data.get("repository", "best"))
     recorded = str(data.get("recorded_at", ""))
     php = data.get("phpunit", {})
     nm = data.get("newman", {})
@@ -142,7 +142,7 @@ def repository_label(phases: dict[str, dict | None]) -> str:
         data = phases.get(phase)
         if data and data.get("repository"):
             return str(data["repository"])
-    return "improved"
+    return "best"
 
 
 def build_markdown(run_id: str, scenario: str, phases: dict[str, dict | None]) -> str:
@@ -243,7 +243,7 @@ def main() -> int:
     parser.add_argument(
         "--scenario",
         default="",
-        help="Scenario id (e.g. api-spec-change). Default: parse existing RECORD.md or (unset)",
+        help="Scenario id (e.g. api-spec-change-status-int). Default: parse existing RECORD.md or (unset)",
     )
     parser.add_argument(
         "--write",
