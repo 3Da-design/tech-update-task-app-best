@@ -3,7 +3,7 @@
 技術更新時の影響を定量評価するための **従来構成（悪い例）** 実験台です。  
 同一機能のタスク管理アプリを、Controller に業務ロジックと DB アクセスを集中させた密結合構成で実装し、改良構成（別リポジトリ）と更新シナリオごとに比較します。
 
-[![CI](https://github.com/3Da-design/tech-update-task-app/actions/workflows/ci.yml/badge.svg)](https://github.com/3Da-design/tech-update-task-app/actions/workflows/ci.yml)
+[![CI](https://github.com/3Da-design/tech-update-task-app-legacy/actions/workflows/ci.yml/badge.svg)](https://github.com/3Da-design/tech-update-task-app-legacy/actions/workflows/ci.yml)
 
 ---
 
@@ -89,7 +89,7 @@ app/
 | CI | GitHub Actions（4 ジョブ並列） |
 | 開発環境 | Docker Compose（`http://localhost:8001` — 改良構成と同時起動可） |
 
-機能一覧は [docs/FeatureList.md](docs/FeatureList.md) を参照してください。
+機能一覧は [docs/FEATURE_LIST.md](docs/FEATURE_LIST.md) を参照してください。
 
 ---
 
@@ -252,9 +252,8 @@ composer experiment:metrics -- --phase after_fix --diff-ref experiment-baseline-
 
 | ドキュメント | 内容 |
 |--------------|------|
-| [docs/COMPARABILITY.md](docs/COMPARABILITY.md) | 比較可能化の修正内容（本ドキュメント） |
 | [docs/EXPERIMENT.md](docs/EXPERIMENT.md) | 実験設計・指標・フェーズ |
-| [docs/FeatureList.md](docs/FeatureList.md) | 機能一覧 |
+| [docs/FEATURE_LIST.md](docs/FEATURE_LIST.md) | 機能一覧 |
 | [docs/TESTING.md](docs/TESTING.md) | テストツールの使い方 |
 | [docs/CI.md](docs/CI.md) | GitHub Actions |
 | [docs/experiment/LEGACY_MIGRATION.md](docs/experiment/LEGACY_MIGRATION.md) | 従来構成リポジトリ作成手順 |
@@ -266,3 +265,4 @@ composer experiment:metrics -- --phase after_fix --diff-ref experiment-baseline-
 ## ライセンス
 
 MIT（Laravel プロジェクトスケルトンに準拠）
+# tech-update-task-app-best
