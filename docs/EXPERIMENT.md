@@ -109,7 +109,7 @@
 
 ## ベースラインの確立
 
-従来構成で CI がすべて成功したら、`main` の先端にタグを付ける（**legacy Docker: Web 8001 / DB 5433** が含まれること）。
+従来構成で CI がすべて成功したら、`main` の先端にタグを付ける（**best Docker: Web 8003 / DB 5434** が含まれること）。
 
 ```bash
 git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture (8001 Docker)"

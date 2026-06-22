@@ -137,4 +137,63 @@ class TaskApiTest extends TestCase
     $response->assertNoContent();
     $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
   }
+
+  public function test_update_other_users_task_returns_404(): void
+  {
+    $otherUser = User::factory()->create();
+    $task = Task::query()->create([
+      'user_id' => $otherUser->id,
+      'title' => 'Other user task',
+      'description' => null,
+      'status' => 'todo',
+      'priority' => 'medium',
+      'due_date' => null,
+    ]);
+
+    $response = $this->actingAs($this->user)->putJson("/api/tasks/{$task->id}", [
+      'title' => 'Hijacked',
+      'status' => 'todo',
+    ]);
+
+    $response->assertNotFound();
+    $this->assertDatabaseHas('tasks', [
+      'id' => $task->id,
+      'title' => 'Other user task',
+    ]);
+  }
+
+  public function test_destroy_other_users_task_returns_404(): void
+  {
+    $otherUser = User::factory()->create();
+    $task = Task::query()->create([
+      'user_id' => $otherUser->id,
+      'title' => 'Protected task',
+      'description' => null,
+      'status' => 'todo',
+      'priority' => 'medium',
+      'due_date' => null,
+    ]);
+
+    $response = $this->actingAs($this->user)->deleteJson("/api/tasks/{$task->id}");
+
+    $response->assertNotFound();
+    $this->assertDatabaseHas('tasks', ['id' => $task->id]);
+  }
+
+  public function test_index_with_invalid_due_date_sort_ignores_sort(): void
+  {
+    Task::query()->create([
+      'user_id' => $this->user->id,
+      'title' => 'Task A',
+      'description' => null,
+      'status' => 'todo',
+      'priority' => 'medium',
+      'due_date' => '2026-06-01',
+    ]);
+
+    $response = $this->actingAs($this->user)->getJson('/api/tasks?due_date_sort=invalid');
+
+    $response->assertOk();
+    $response->assertJsonCount(1, 'data');
+  }
 }

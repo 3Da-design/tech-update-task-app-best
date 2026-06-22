@@ -3,19 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class StoreTaskRequest extends FormRequest
+class StoreTaskRequest extends TaskPayloadRequest
 {
-  /**
-   * Determine if the user is authorized to make this request.
-   */
-  public function authorize(): bool
-  {
-    return true;
-  }
-
   /**
    * Get the validation rules that apply to the request.
    *
@@ -23,12 +13,6 @@ class StoreTaskRequest extends FormRequest
    */
   public function rules(): array
   {
-    return [
-      'title' => ['required', 'string', 'max:255'],
-      'description' => ['nullable', 'string'],
-      'status' => ['required', 'string', Rule::in(config('task.status_values'))],
-      'priority' => ['required', 'string', Rule::in(config('task.priority_values'))],
-      'due_date' => ['nullable', 'date'],
-    ];
+    return $this->taskRules(partial: false);
   }
 }

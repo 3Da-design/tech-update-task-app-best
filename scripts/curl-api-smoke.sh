@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# API の疎通とバリデーション（不正 status → 422）を確認する。BASE は省略時 legacy Docker（8001）
+# API の疎通とバリデーション（不正 status → 422）を確認する。BASE は省略時 best Docker（8003）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

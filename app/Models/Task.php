@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
  * @property string $title
  * @property string|null $description
  * @property string $status
+ * @property string $priority
  * @property Carbon|null $due_date
  */
 #[Fillable(['user_id', 'title', 'description', 'status', 'priority', 'due_date'])]

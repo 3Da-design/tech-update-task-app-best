@@ -1,9 +1,9 @@
-# tech-update-task-app-legacy
+# tech-update-task-app-best
 
 技術更新時の影響を定量評価するための **従来構成（悪い例）** 実験台です。  
 同一機能のタスク管理アプリを、Controller に業務ロジックと DB アクセスを集中させた密結合構成で実装し、改良構成（別リポジトリ）と更新シナリオごとに比較します。
 
-[![CI](https://github.com/3Da-design/tech-update-task-app-legacy/actions/workflows/ci.yml/badge.svg)](https://github.com/3Da-design/tech-update-task-app-legacy/actions/workflows/ci.yml)
+[![CI](https://github.com/3Da-design/tech-update-task-app-best/actions/workflows/ci.yml/badge.svg)](https://github.com/3Da-design/tech-update-task-app-best/actions/workflows/ci.yml)
 
 ---
 
@@ -87,7 +87,7 @@ app/
 | 品質 | PHPStan (Larastan)、Laravel Pint、ESLint |
 | テスト | PHPUnit、Postman / Newman |
 | CI | GitHub Actions（4 ジョブ並列） |
-| 開発環境 | Docker Compose（`http://localhost:8001` — 改良構成と同時起動可） |
+| 開発環境 | Docker Compose（`http://localhost:8003` — 他構成と同時起動可） |
 
 機能一覧は [docs/FEATURE_LIST.md](docs/FEATURE_LIST.md) を参照してください。
 
@@ -98,8 +98,8 @@ app/
 ### 前提
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) など Compose v2 対応環境
-- 開発フローは **Docker Compose のみ**（ホストで `php artisan serve` は使わない。Web は **ポート `8001`**、DB 公開は **5433**）
-- 改良構成（`tech-update-task-app`）と **同時に起動可能**（コンテナ名・ポート・ボリュームを分離済み）
+- 開発フローは **Docker Compose のみ**（ホストで `php artisan serve` は使わない。Web は **ポート `8003`**、DB 公開は **5434**）
+- 他構成と **同時に起動可能**（コンテナ名・ポート・ボリュームを分離済み）
 - **フロント（npm）は Docker の `node` サービスのみ**（ホストで `npm install` / `npm ci` しない。`node_modules` の混在で `ENOTEMPTY` などが起きる）
 
 ### 初回セットアップ
@@ -117,9 +117,9 @@ docker compose exec app php artisan migrate --seed
 composer npm:docker-build
 ```
 
-ブラウザで `http://localhost:8001` を開きます。シードユーザー: `test@example.com` / `password`
+ブラウザで `http://localhost:8003` を開きます。シードユーザー: `test@example.com` / `password`
 
-> `.env` は `.env.example` をコピーし、`APP_HTTP_PORT=8001` 等が入っていることを確認してください。
+> `.env` は `.env.example` をコピーし、`APP_HTTP_PORT=8003` 等が入っていることを確認してください。
 
 ### よく使うコマンド
 
@@ -200,7 +200,7 @@ git tag -a experiment-baseline-v1 -m "Experiment baseline: legacy architecture"
 
 [docs/experiment/scenarios/](docs/experiment/scenarios/) の手順に従い、ブランチで変更を適用します。
 
-BEFORE（ベースライン）の手順は [docs/experiment/BEFORE.md](docs/experiment/BEFORE.md) を参照。`experiment-baseline-v1` は legacy Docker（**8001**）込みの CI 緑状態を指します（`git pull` のあと `git fetch --tags`）。
+BEFORE（ベースライン）の手順は [docs/experiment/BEFORE.md](docs/experiment/BEFORE.md) を参照。`experiment-baseline-v1` は best Docker（**8003**）込みの CI 緑状態を指します（`git pull` のあと `git fetch --tags`）。
 
 ```bash
 git fetch --tags

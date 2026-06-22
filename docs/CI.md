@@ -240,7 +240,7 @@ GitHub の **Settings → Branches → Branch protection rules** で、例えば
 | ファイル | 役割 |
 |----------|------|
 | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) | CI ワークフロー定義 |
-| [`phpunit.xml`](../phpunit.xml) | PHPUnit 設定（テスト時 SQLite メモリ） |
+| [`phpunit.xml`](../phpunit.xml) | PHPUnit 設定（`DB_URL` 未設定時は `.env` / CI の PostgreSQL） |
 | [`phpstan.neon`](../phpstan.neon) | PHPStan 設定 |
 | [`pint.json`](../pint.json) | Laravel Pint 設定 |
 | [`eslint.config.js`](../eslint.config.js) | ESLint 設定 |

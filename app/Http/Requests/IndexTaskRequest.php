@@ -21,8 +21,22 @@ class IndexTaskRequest extends FormRequest
     $normalized = [];
 
     foreach (['title', 'status', 'due_date_sort'] as $key) {
-      if ($this->has($key) && $this->input($key) === '') {
-        $normalized[$key] = null;
+      if (! $this->has($key)) {
+        continue;
+      }
+
+      $value = $this->input($key);
+      if (! is_string($value)) {
+        continue;
+      }
+
+      $trimmed = trim($value);
+      $normalized[$key] = $trimmed === '' ? null : $trimmed;
+    }
+
+    if (array_key_exists('due_date_sort', $normalized) && $normalized['due_date_sort'] !== null) {
+      if ($normalized['due_date_sort'] !== 'asc' && $normalized['due_date_sort'] !== 'desc') {
+        $normalized['due_date_sort'] = null;
       }
     }
 

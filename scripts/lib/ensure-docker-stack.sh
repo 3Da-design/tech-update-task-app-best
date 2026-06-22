@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# legacy Docker スタックの起動と疎通確認（check-quality.sh 等から source）
+# best Docker スタックの起動と疎通確認（check-quality.sh 等から source）
 # 事前に scripts/lib/app-base-url.sh を source し APP_BASE_URL を export すること
 set -euo pipefail
 
-ensure_legacy_compose_file() {
+ensure_best_compose_file() {
   local compose_file="${1:?compose file path required}"
-  if ! grep -q 'container_name: tech-update-task-app-legacy-php' "${compose_file}" 2>/dev/null; then
-    echo "ERROR: ${compose_file} が legacy 用ではありません（tech-update-task-app-legacy-php が未定義）。"
-    echo "  改良構成とコンテナ名が衝突し、docker compose up で失敗します。"
+  if ! grep -q 'container_name: tech-update-task-app-best-php' "${compose_file}" 2>/dev/null; then
+    echo "ERROR: ${compose_file} が best 用ではありません（tech-update-task-app-best-php が未定義）。"
+    echo "  他構成とコンテナ名が衝突し、docker compose up で失敗します。"
     echo "  対処: git checkout main && git pull のあと、main から実験ブランチを切り直してください。"
     echo "  例: git checkout -b exp/your-scenario main"
     exit 1
@@ -52,9 +52,9 @@ ensure_docker_stack_running() {
   local base_url="${2:?base url required}"
   local compose_file="${root_dir}/docker-compose.yml"
 
-  ensure_legacy_compose_file "${compose_file}"
+  ensure_best_compose_file "${compose_file}"
 
-  echo "== Ensure Docker stack (legacy: ${base_url}) =="
+  echo "== Ensure Docker stack (best: ${base_url}) =="
   docker compose up -d
   wait_for_postgres_healthy
   wait_for_app_http "${base_url}"

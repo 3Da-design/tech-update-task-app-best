@@ -11,8 +11,8 @@
 ## 1. リポジトリの複製
 
 ```bash
-git clone <improved-repo-url> tech-update-task-app-legacy
-cd tech-update-task-app-legacy
+git clone <improved-repo-url> tech-update-task-app-best
+cd tech-update-task-app-best
 git remote rename origin improved-origin   # 任意
 git remote add origin <new-legacy-repo-url>
 ```
@@ -41,7 +41,7 @@ git remote add origin <new-legacy-repo-url>
 
 ## 3. 動作・CI の確認
 
-legacy リポジトリの Docker は改良構成と **ポート・コンテナ名を分離** 済み（Web `8001` / DB `5433`）。`.env.example` をコピーし `APP_HTTP_PORT=8001` 等を設定してから:
+best リポジトリの Docker は他構成と **ポート・コンテナ名を分離** 済み（Web `8003` / DB `5434`）。`.env.example` をコピーし `APP_HTTP_PORT=8003` 等を設定してから:
 
 ```bash
 docker compose up -d

@@ -112,4 +112,63 @@ class TaskWebTest extends TestCase
     $response->assertRedirect(route('tasks.index'));
     $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
   }
+
+  public function test_edit_other_users_task_returns_404(): void
+  {
+    $otherUser = User::factory()->create();
+    $task = Task::query()->create([
+      'user_id' => $otherUser->id,
+      'title' => 'Other user task',
+      'description' => null,
+      'status' => 'todo',
+      'priority' => 'medium',
+      'due_date' => null,
+    ]);
+
+    $response = $this->actingAs($this->user)->get("/tasks/{$task->id}/edit");
+
+    $response->assertNotFound();
+  }
+
+  public function test_update_other_users_task_returns_404(): void
+  {
+    $otherUser = User::factory()->create();
+    $task = Task::query()->create([
+      'user_id' => $otherUser->id,
+      'title' => 'Other user task',
+      'description' => null,
+      'status' => 'todo',
+      'priority' => 'medium',
+      'due_date' => null,
+    ]);
+
+    $response = $this->actingAs($this->user)->put("/tasks/{$task->id}", [
+      'title' => 'Hijacked',
+      'status' => 'todo',
+    ]);
+
+    $response->assertNotFound();
+    $this->assertDatabaseHas('tasks', [
+      'id' => $task->id,
+      'title' => 'Other user task',
+    ]);
+  }
+
+  public function test_destroy_other_users_task_returns_404(): void
+  {
+    $otherUser = User::factory()->create();
+    $task = Task::query()->create([
+      'user_id' => $otherUser->id,
+      'title' => 'Protected task',
+      'description' => null,
+      'status' => 'todo',
+      'priority' => 'medium',
+      'due_date' => null,
+    ]);
+
+    $response = $this->actingAs($this->user)->delete("/tasks/{$task->id}");
+
+    $response->assertNotFound();
+    $this->assertDatabaseHas('tasks', ['id' => $task->id]);
+  }
 }
