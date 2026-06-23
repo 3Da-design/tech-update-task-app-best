@@ -13,8 +13,6 @@ Laravel 製のタスク管理アプリです。Controller / Service / Policy に
 - REST API（認証付き JSON）
 - PHPStan / ESLint / PHPUnit / Newman による品質チェック
 
-詳細は [docs/FEATURE_LIST.md](docs/FEATURE_LIST.md) を参照してください。
-
 ---
 
 ## 技術スタック
@@ -114,8 +112,6 @@ docker compose --profile node run --rm node npm run test:api
 | `frontend` | ESLint + Vite build |
 | `api-tests` | Newman |
 
-詳細: [docs/TESTING.md](docs/TESTING.md)、[docs/CI.md](docs/CI.md)
-
 ---
 
 ## 技術更新実験（任意）
@@ -125,9 +121,8 @@ docker compose --profile node run --rm node npm run test:api
 | ドキュメント | 内容 |
 |--------------|------|
 | [docs/EXPERIMENT.md](docs/EXPERIMENT.md) | 実験設計・評価指標 |
-| [docs/experiment/BEFORE.md](docs/experiment/BEFORE.md) | ベースライン手順 |
-| [docs/experiment/scenarios/](docs/experiment/scenarios/) | 更新シナリオ（3 件） |
-| [docs/experiment/results/RESULTS.md](docs/experiment/results/RESULTS.md) | 計測結果一覧 |
+| [docs/scenarios/](docs/scenarios/) | 更新シナリオ（3 件） |
+| [experiment/results/](experiment/results/) | シナリオ結果（publish 先） |
 
 ```bash
 composer experiment:metrics -- --phase baseline --diff-ref experiment-baseline-v1
@@ -140,9 +135,9 @@ composer experiment:metrics -- --phase baseline --diff-ref experiment-baseline-v
 
 | ドキュメント | 内容 |
 |--------------|------|
-| [docs/FEATURE_LIST.md](docs/FEATURE_LIST.md) | 機能一覧 |
-| [docs/TESTING.md](docs/TESTING.md) | テストの使い方 |
-| [docs/CI.md](docs/CI.md) | GitHub Actions |
+| [docs/EXPERIMENT.md](docs/EXPERIMENT.md) | 実験設計 |
+| [docs/scenarios/](docs/scenarios/) | 更新シナリオ手順 |
+| [experiment/results/](experiment/results/) | シナリオ結果（publish 先） |
 | [postman/README.md](postman/README.md) | Postman コレクション |
 
 ---

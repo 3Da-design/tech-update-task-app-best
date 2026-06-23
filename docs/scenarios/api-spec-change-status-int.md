@@ -51,5 +51,4 @@ composer experiment:record -- --scenario api-spec-change-status-int --write
 ## 完了条件
 
 - [ ] CI 4 ジョブすべて成功（`after_fix`）
-- [ ] `docs/experiment/results/api-spec-change-status-int/` に 3 フェーズ JSON
-- [ ] [RESULTS.md](../results/RESULTS.md) を更新
+- [ ] `experiment/results/api-spec-change-status-int/` に 3 フェーズ JSON

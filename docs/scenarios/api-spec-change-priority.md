@@ -50,5 +50,4 @@ composer experiment:record -- --scenario api-spec-change-priority --write
 ## 完了条件
 
 - [ ] CI 4 ジョブすべて成功（`after_fix`）
-- [ ] `docs/experiment/results/api-spec-change-priority/` に 3 フェーズ JSON
-- [ ] [RESULTS.md](../results/RESULTS.md) を更新
+- [ ] `experiment/results/api-spec-change-priority/` に 3 フェーズ JSON

@@ -51,5 +51,4 @@ composer experiment:metrics -- --phase after_fix --diff-ref experiment-baseline-
 ## 完了条件
 
 - [ ] CI 4 ジョブすべて成功
-- [ ] `docs/experiment/results/db-schema-change/` に 3 フェーズ JSON
-- [ ] [RESULTS.md](../results/RESULTS.md) を更新
+- [ ] `experiment/results/db-schema-change/` に 3 フェーズ JSON
