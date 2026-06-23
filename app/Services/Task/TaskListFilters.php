@@ -11,7 +11,7 @@ final class TaskListFilters
     ) {}
 
     /**
-     * @param array<string, mixed> $query
+     * @param  array<string, mixed>  $query
      */
     public static function fromQuery(array $query): self
     {

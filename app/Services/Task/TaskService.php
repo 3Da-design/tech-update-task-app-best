@@ -22,7 +22,7 @@ final class TaskService
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function createForUser(int $userId, array $attributes): Task
     {
@@ -35,7 +35,7 @@ final class TaskService
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function update(Task $task, array $attributes): Task
     {
@@ -65,5 +65,4 @@ final class TaskService
 
         return $task;
     }
-
 }
